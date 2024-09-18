@@ -1,7 +1,7 @@
 # my CTF challange
 
 This repository provides a simple implementation of AES-128-CBC encryption and decryption in C using the `AES_128_CBC.h` header file. AES-128-CBC is a widely used symmetric encryption algorithm that operates on fixed-size blocks of data.
-
+![alt text](pcap-image.png)
 ## Table of Contents
 
 - [Frame story](#frame-story)
