@@ -367,6 +367,27 @@ def send_application_data(self, data, is_request):
         self.send_tls_packet(src_ip, dst_ip, sport, dport)
 ```
 ##### issue
+For now, not succeded to decrypt the pcap with sslkeylog and wireshark.
+After analyse that issue, my foundation:
+- After checking a "real pcap" decryption procces with those coomands, I compare with my pcap.
+The issue is not with: sslkeylog details, pre master secret, ............
+```bash
+tshark -r new_output.pcap \
+    -o "tls.keylog_file:sslkeylog_sniffEx.log" \
+    -o "tls.debug_file:tls_debug2.txt" \
+    -V
+```
+מצאתי שתהליך הפענוח הוא כזה:
+תחילה, נבדק XXX
+אח"כ XXX
+אח"כ XXX
+לא אמורה להיות בעיה כאן כי...
+
+- I though maby the issue is the fact I used Self Signed Certificate and no CA sigend for server, so OS not בוטחת in that. But this thing only for the 
+- ....
+- .
+- .
+
 ### Create Communication
 ```python
 
@@ -387,7 +408,7 @@ def send_application_data(self, data, is_request):
 
 ```
 
-### Protocol File
+#### Protocol File
 ```python
 
 ```
