@@ -29,9 +29,16 @@ successfully!
 
 ## characterization
 
-- Simple AES-128-CBC encryption and decryption.
-- Header-only implementation for easy integration.
-
+1. Revealing the files: Participants receive the mission.pdf file. They must discover that the file contains hidden files (steganography) and extract server.exe and client.exe. They find that server.exe is a valid executable, but client.exe appears to be corrupted.
+2. Client fix: Running server.exe alone prints a message with a random sequence of characters. An in-depth analysis of the message and understanding the relationship between it and client.exe reveals that it is used as an encryption key. Participants write a Python script that uses the key to decrypt client.exe and make it a valid executable file.
+3. Communication analysis: The participants run server.exe and client.exe at the same time, but find that the client does not receive any information from the server. Analysis of the capture file (capture.pcapng) attached to mission.pdf reveals the bug in the server: it sends the response "200 OK" to the correct client, but it sends the requested resource to another client that does not exist.
+4. Creating another client: To get around the bug, the participants understand that they must create another client (client2.exe or any other name) that will connect to the server at the same time as the original client. The new client needs to be different from the original so that the server does not identify it as a duplicate.
+The difference between the clients is that the first does not load a certificate (therefore the resource does not reach it), the second does.
+5. After connecting to the server 2 clients: the participants encounter another problem. The server requires client2 to load a self-signed certificate in order for it to send the resource to it.
+The participants are asked to learn by themselves how to create a self-signed ssl certificate of this type (no need for a CA certificate), load it with a code that connects to the server, so that the server recognizes the certificate during the handshake, and sends it the requested resource.
+For this, they must first create a localhost domain in the operating system.
+If they loaded in crt format, they will receive a message that they must load der format.
+6. Capturing the resource: The new client manages to get the correct resource sent from the server. The resource is an image file (resource.png) containing the flag in a visible form. Participants need to identify the flag and submit it to complete the challenge.
 ## Usage
 
 ### Single Block Example
