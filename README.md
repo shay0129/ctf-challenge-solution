@@ -17,6 +17,8 @@ This repository provides a simple implementation of AES-128-CBC encryption and d
     - [Client Change Cipher Spec](#client-change-cipher-spec)
     - [Server Change Cipher Spec](#server-change-cipher-spec)
     - [Create SSLKeyLog File](#create-sslkeylog-file)
+    - [Application Data Encryption](#application-data-encryption)
+      - [issue](#issue)
   - [Create Communication](#create-communication)
     - [Server File](#server-file)
     - [Client no-cert File](#client-no-cert-file)
@@ -67,38 +69,34 @@ If they loaded in crt format, they will receive a message that they must load de
 ### Create PCAP file
 ```python
 def main():
-#----------------------------------
     config = Config()
     writer = CustomPcapWriter(config)
     # clear the SSL_KEYLOG_FILE
     with open(config.SSL_KEYLOG_FILE, "w") as f:
         pass
-    
-    #----------
-    # Client 1
-    #----------
+
     logging.info("\n--- Client 1 Session ---")
     client1_session = UnifiedTLSSession(writer, config.CLIENT1_IP, config.SERVER_IP, 12345, 443, use_tls=True, use_client_cert=True)
     client1_session.run_session(config.GET_REQUEST, config.OK_RESPONSE, 'flag.jpeg')
     client1_session.verify_tls_session()  # Verify TLS session for Client 1
 
-    #----------
-    # Client 2
-    #----------
     logging.info("\n--- Client 2 Session ---")
     client2_session = UnifiedTLSSession(writer, config.CLIENT2_IP, config.SERVER_IP, 12346, 443, use_tls=True, use_client_cert=False)
     client2_session.run_session(config.GET_REQUEST, config.BAD_REQUEST)
-    #client2_session.verify_tls_session()  # Verify TLS session for Client 2
 
     writer.save_pcap(config.OUTPUT_PCAP)
     writer.verify_and_log_packets()
 
-    # Optional: Print a summary of the TLS session verifications
-    logging.info("\nTLS Session Verification Summary:")
-    logging.info(f"Client 1: {len(client1_session.encrypted_packets)} packets verified")
 ```
-### Create TLS Handshake
+Explain:
+Client01 do TLS Handshake with the server while sending Cleint Cert.
+Client01 ask a resource from the server, and he send it.
+The connection between them after handshake is secure.
+Client02 do TLS Handshake without send Client cert.
+Client02 ask a resource from the server, and he dont send it, but send 400 status code.
+The connection between them after handshake is not secure.
 
+### Create TLS Handshake
 ```python
 def perform_handshake(self)-> None:
         # According to RFC 5246, the TLS handshake process is as follows:
@@ -129,14 +127,18 @@ def perform_handshake(self)-> None:
             logging.error(f"TLS Handshake failed: {str(e)}")
             raise e
 ```
+Explain:
+1. Client Hello - The client tell to server the encryption algorithms he support, and choose random bytes for idendify.
+2. Server Hello -
+3. Client key Exchange - Client send to server an encrypted shared key, that only server can decrypt it and calculate a main shared key.
+4. Each side calculate this shared key. server - with a decrypted key and client with original key.
+5. 
 
 ### Client Hello
-
 ```python
 def send_client_hello(self)-> None:
         self.client_GMT_unix_time, self.client_random_bytes = generate_random()
         self.client_random = self.client_GMT_unix_time.to_bytes(4, 'big') + self.client_random_bytes
-        logging.info(f"Generated client_random: {self.client_random.hex()}")
         
         client_hello = TLSClientHello(
             version=0x0303,  # TLS 1.2
@@ -152,19 +154,18 @@ def send_client_hello(self)-> None:
         )
         self.tls_context.msg = [client_hello]
         self.send_tls_packet(self.client_ip, self.server_ip, self.client_port, self.server_port)
-
-        logging.info(f"Client Hello sent from {self.client_ip}")
 ```
-
+Explain:
+Client Random Record included GMT unix time and random bytes.
+Client is offer the ciphers he support (only one, in this case).
+Client ...rsa???
 #### Server Hello
 ```python
 def send_server_hello(self)-> None:      
         self.server_GMT_unix_time, self.server_random_bytes = generate_random()
         self.server_random = self.server_GMT_unix_time.to_bytes(4, 'big') + self.server_random_bytes
-        logging.info(f"Generated server_random: {self.server_random.hex()}")
 
         self.session_id = os.urandom(32)
-        logging.info(f"Generated session_id: {self.session_id.hex()}")
         try:
             
             cert = load_cert(self.server_name+".pem")
@@ -172,16 +173,9 @@ def send_server_hello(self)-> None:
             # Extract the public key from the certificate
             self.server_public_key = cert.public_key()
 
-            logging.info(f"Server certificate loaded. Subject: {cert.subject}")
-            logging.info(f"Server certificate public key: {self.server_public_key.public_numbers().n}")
-
         except Exception as e:
             logging.error(f"Error loading server certificate: {str(e)}")
             raise
-
-        # recheck the server certificate
-        logging.info(f"Server certificate loaded. Subject: {cert.subject}")
-        logging.info(f"Server certificate public key: {cert.public_key().public_bytes(serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo).decode()}")
 
         server_hello = TLSServerHello(
             version=0x0303,  # TLS 1.2
@@ -200,21 +194,14 @@ def send_server_hello(self)-> None:
         
         # Server Certificate
         certificate = TLSCertificate(certs=[(len(cert_der), cert_der)])
-        logging.info(f"Sending server certificate. Size: {len(cert_der)} bytes")
-
-        # Make sure the SSL keylog file is being used correctly
-        ssl_keylog_file = self.pcap_writer.config.SSL_KEYLOG_FILE
-        logging.info(f"Using SSL keylog file: {ssl_keylog_file}")
-        if not os.path.exists(ssl_keylog_file):
-            logging.warning(f"SSL keylog file does not exist: {ssl_keylog_file}")
 
         # Add this line to explicitly set the TLS version for the session
         self.tls_context.tls_version = 0x0303  # TLS 1.2
 
         self.tls_context.msg = [server_hello, certificate, TLSCertificateRequest(), TLSServerHelloDone()]
         self.send_tls_packet(self.server_ip, self.client_ip, self.server_port, self.client_port)
-        logging.info(f"Server Hello and Certificate sent to {self.client_ip}")
 ```
+Explain:
 
 #### Client Key Exchange
 ```python
@@ -225,15 +212,11 @@ def send_client_key_exchange(self)-> None:
                 cert = load_cert("Pasdaran.local.crt")
                 cert_der = cert.public_bytes(serialization.Encoding.DER)
                 client_certificate = TLSCertificate(certs=[(len(cert_der), cert_der)])
-
-                logging.info(f"Client Certificate sent from {self.client_ip}. Certificate size: {len(cert_der)} bytes")
             except Exception as e:
                 logging.error(f"Error handling client certificate: {str(e)}")
                 raise e
-
         try:
             self.pre_master_secret = generate_pre_master_secret()
-            logging.info(f"Client generated pre_master_secret: {self.pre_master_secret.hex()}")
 
             # Encrypt pre-master secret with server's public key who extracted from server certificate
             self.encrypted_pre_master_secret = encrypt_pre_master_secret(self.pre_master_secret, self.server_public_key)
@@ -241,7 +224,6 @@ def send_client_key_exchange(self)-> None:
             if not isinstance(self.encrypted_pre_master_secret, bytes):
                 self.encrypted_pre_master_secret = bytes(self.encrypted_pre_master_secret)
 
-            logging.info(f"Encrypted pre_master_secret length: {len(self.encrypted_pre_master_secret)}")
 
             # validate the length of the encrypted pre-master secret
             length_bytes = len(self.encrypted_pre_master_secret).to_bytes(2, 'big')
@@ -254,7 +236,6 @@ def send_client_key_exchange(self)-> None:
             )
             self.tls_context.msg = [client_certificate, client_key_exchange] if client_certificate else [client_key_exchange]
             self.send_tls_packet(self.client_ip, self.server_ip, self.client_port, self.server_port)
-            logging.info(f"Client Key Exchange sent from {self.client_ip}")
 
         except Exception as e:
             logging.error(f"Error in client key exchange: {str(e)}")
@@ -268,12 +249,9 @@ def handle_master_secret(self)-> None:
         # try to decrypt the pre-master secret with server's private key
         try:
             decrypted_pre_master_secret = decrypt_pre_master_secret(self.encrypted_pre_master_secret, self.server_private_key)
-            logging.info(f"Server decrypted pre_master_secret: {decrypted_pre_master_secret.hex()}")
-            if compare_to_original(decrypted_pre_master_secret, self.pre_master_secret):
-                logging.info("Pre master secret encrypted matches.")
         except Exception as e:
-            logging.error(f"Pre-master secret decryption failed: {e}")
             raise ValueError("Pre-master secret does not match") from e
+
         # Compute master secret
         self.master_secret = self.prf.compute_master_secret(
             self.pre_master_secret,
@@ -312,8 +290,8 @@ def send_client_change_cipher_spec(self)-> None:
         self.tls_context.msg = [TLSChangeCipherSpec()]
         self.tls_context.msg = [client_finished]
         self.send_tls_packet(self.client_ip, self.server_ip, self.client_port, self.server_port)
-        logging.info(f"Client ChangeCipherSpec and Finished sent from {self.client_ip}")
 ```
+Explain:
 
 #### Server Change Cipher Spec packet
 ```python
@@ -357,7 +335,38 @@ def handle_ssl_key_log(self):
         else:
             raise Exception("Master secret verification failed")
 ```
-
+#### Application Data Encryption
+```python
+def send_application_data(self, data, is_request):
+        is_client = is_request
+        key = self.client_write_key if is_client else self.server_write_key
+        mac_key = self.client_write_mac_key if is_client else self.server_write_mac_key
+        
+        iv = os.urandom(16)  # Generate a new IV for each message
+        
+        # Encrypt the data using CBC mode with HMAC-SHA256 for integrity
+        encrypted_data = encrypt_tls12_record_cbc(data, key, iv, mac_key)
+        self.encrypted_packets.append(encrypted_data)
+        self.original_messages.append(data)
+        
+        # שמור את המפתח וה-IV
+        self.packet_keys.append(key)
+        self.packet_ivs.append(iv)
+        self.packet_mac_keys.append(mac_key)
+        
+        # Create a TLS Application Data record
+        tls_data = TLSApplicationData(data=encrypted_data)
+        self.tls_context.msg = [tls_data]
+        
+        src_ip = self.client_ip if is_request else self.server_ip
+        dst_ip = self.server_ip if is_request else self.client_ip
+        sport = self.client_port if is_request else self.server_port
+        dport = self.server_port if is_request else self.client_port
+        
+        # Send the encrypted TLS packet
+        self.send_tls_packet(src_ip, dst_ip, sport, dport)
+```
+##### issue
 ### Create Communication
 ```python
 
