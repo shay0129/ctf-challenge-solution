@@ -54,7 +54,7 @@ If they loaded in crt format, they will receive a message that they must load de
 
 ### Single Block Example
 
-```bash
+```python
 def perform_handshake(self)-> None:
         # According to RFC 5246, the TLS handshake process is as follows:
         try:
