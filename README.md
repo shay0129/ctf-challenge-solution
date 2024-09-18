@@ -5,6 +5,7 @@ This repository provides a simple implementation of AES-128-CBC encryption and d
 ## Table of Contents
 
 - [Frame story](#frame-story)
+- [Subjects](#subjects)
 - [Characterization](#characterization)
 - [Usage](#usage)
   - [Single Block Example](#single-block-example)
@@ -27,7 +28,17 @@ To help you with the task, the file of communication with Iranian servers has be
 
 successfully!
 
-## characterization
+## Subjects
+
+1. Wireshark: Understanding how to read and analyze network traffic.
+2. Python programming: writing scripts for decoding and encryption.
+3. Knowledge of operating systems: understanding of the PE format.
+4. Cryptography: use of encryption keys and file decryption.
+5. HTTP protocol: understanding of the protocol and ability to analyze bugs in it.
+6. Reversing: using tools like IDA to analyze and understand binary code.//embedding an exe in a pdf file.
+7. Creating the PCAP using the SCAPY library of PYTHON
+
+## Characterization
 
 1. Revealing the files: Participants receive the mission.pdf file. They must discover that the file contains hidden files (steganography) and extract server.exe and client.exe. They find that server.exe is a valid executable, but client.exe appears to be corrupted.
 2. Client fix: Running server.exe alone prints a message with a random sequence of characters. An in-depth analysis of the message and understanding the relationship between it and client.exe reveals that it is used as an encryption key. Participants write a Python script that uses the key to decrypt client.exe and make it a valid executable file.
@@ -43,9 +54,8 @@ If they loaded in crt format, they will receive a message that they must load de
 
 ### Single Block Example
 
-```c
-///
-}
+```py
+# 
 ```
 
 ### Multiple Blocks Example
