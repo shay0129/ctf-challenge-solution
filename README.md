@@ -17,6 +17,11 @@ This repository provides a simple implementation of AES-128-CBC encryption and d
     - [Client Change Cipher Spec](#client-change-cipher-spec)
     - [Server Change Cipher Spec](#server-change-cipher-spec)
     - [Create SSLKeyLog File](#create-sslkeylog-file)
+  - [Create Communication](#create-communication)
+    - [Server File](#server-file)
+    - [Client no-cert File](#client-no-cert-file)
+    - [Client cert File](#client-cert-file)
+    - [Protocol File](#protocol-file)
 - [Building and Integration](#building-and-integration)
 - [Known Limitations](#known-limitations)
 - [Contributing](#contributing)
@@ -351,6 +356,31 @@ def handle_ssl_key_log(self):
             logging.info(f"Derived master_secret: {self.master_secret.hex()}")
         else:
             raise Exception("Master secret verification failed")
+```
+
+### Create Communication
+```python
+
+```
+
+#### Server File
+```python
+
+```
+
+#### Client no-cert File
+```python
+
+```
+
+#### Client cert File
+```python
+
+```
+
+### Protocol File
+```python
+
 ```
 ## Building and Integration
 
