@@ -4,8 +4,8 @@ This repository provides a simple implementation of AES-128-CBC encryption and d
 
 ## Table of Contents
 
-- [Introduction](#introduction)
-- [Features](#features)
+- [Frame story](#frame-story)
+- [Characterization](#characterization)
 - [Usage](#usage)
   - [Single Block Example](#single-block-example)
   - [Multiple Blocks Example](#multiple-blocks-example)
@@ -14,11 +14,20 @@ This repository provides a simple implementation of AES-128-CBC encryption and d
 - [Contributing](#contributing)
 - [License](#license)
 
-## Introduction
+## Frame story
 
-AES-128-CBC operates on 128-bit blocks and supports key sizes of 128 bits. Cipher Block Chaining (CBC) mode introduces an Initialization Vector (IV) to each block, making each encryption operation dependent on the previous one. This implementation includes functions for encryption and decryption using the CBC mode.
 
-## Features
+In 1939, the US Army recruited about 10,000 German boys, mostly Jews, to defeat Nazi Germany in World War II.
+
+In the year 2025, the Richie Boys Force has been re-established with a similar goal, to subdue Iran's Islamic Revolutionary Guard Corps.
+You have been recruited into the Ritchie Boys cyber team, your job is to take over an Iranian server and find the encryption key used by the organization's radios.
+The task will not be easy, but remember that the future of the world depends on you.
+
+To help you with the task, the file of communication with Iranian servers has been attached.
+
+successfully!
+
+## characterization
 
 - Simple AES-128-CBC encryption and decryption.
 - Header-only implementation for easy integration.
