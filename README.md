@@ -8,8 +8,14 @@ This repository provides a simple implementation of AES-128-CBC encryption and d
 - [Subjects](#subjects)
 - [Characterization](#characterization)
 - [Usage](#usage)
-  - [Single Block Example](#single-block-example)
-  - [Multiple Blocks Example](#multiple-blocks-example)
+  - [Create TLS Handshake](#create-tls-handshake)
+  - [Client Hello](#client-hello)
+  - [Server Hello](#server-hello)
+  - [Client Key Exchange](#client-key-exchange)
+  - [Calculate Master Secret](#calculate-master-secret)
+  - [Client Change Cipher Spec](#client-change-cipher-spec)
+  - [Server Change Cipher Spec](#server-change-cipher-spec)
+  - [Create SSLKeyLog File](#create-sslkeylog-file)
 - [Building and Integration](#building-and-integration)
 - [Known Limitations](#known-limitations)
 - [Contributing](#contributing)
@@ -52,7 +58,7 @@ If they loaded in crt format, they will receive a message that they must load de
 6. Capturing the resource: The new client manages to get the correct resource sent from the server. The resource is an image file (resource.png) containing the flag in a visible form. Participants need to identify the flag and submit it to complete the challenge.
 ## Usage
 
-### create TLS handshake
+### Create TLS Handshake
 
 ```python
 def perform_handshake(self)-> None:
@@ -85,7 +91,7 @@ def perform_handshake(self)-> None:
             raise e
 ```
 
-### Client Hello packet
+### Client Hello
 
 ```python
 def send_client_hello(self)-> None:
@@ -111,7 +117,7 @@ def send_client_hello(self)-> None:
         logging.info(f"Client Hello sent from {self.client_ip}")
 ```
 
-### Server Hello packet
+### Server Hello
 ```python
 def send_server_hello(self)-> None:      
         self.server_GMT_unix_time, self.server_random_bytes = generate_random()
@@ -171,7 +177,7 @@ def send_server_hello(self)-> None:
         logging.info(f"Server Hello and Certificate sent to {self.client_ip}")
 ```
 
-### Client Key Exchange packet
+### Client Key Exchange
 ```python
 def send_client_key_exchange(self)-> None:
         client_certificate = None
@@ -216,7 +222,7 @@ def send_client_key_exchange(self)-> None:
             raise e
 ```
 
-### calculate Master Secret
+### Calculate Master Secret
 ```python
 def handle_master_secret(self)-> None:
         # Before generating the master secret,
@@ -251,7 +257,7 @@ def handle_master_secret(self)-> None:
         self.server_write_IV = key_block[112:128]
 ```
 
-### Client Change Cipher Spec packet
+### Client Change Cipher Spec
 ```python
 def send_client_change_cipher_spec(self)-> None:
         client_verify_data = self.prf.compute_verify_data(
@@ -293,7 +299,7 @@ def send_server_change_cipher_spec(self):
         logging.info(f"Server Finished sent to {self.client_ip}")
 ```
 
-### save keys in sslkeylog.log
+### Create SSLKeyLog File
 ```python
 def handle_ssl_key_log(self):
         try:
