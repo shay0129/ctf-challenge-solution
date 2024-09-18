@@ -54,8 +54,35 @@ If they loaded in crt format, they will receive a message that they must load de
 
 ### Single Block Example
 
-```py
-# 
+```bash
+def perform_handshake(self)-> None:
+        # According to RFC 5246, the TLS handshake process is as follows:
+        try:
+            # Step 1: Client Hello
+            self.send_client_hello()
+            
+            # Step 2: Server Hello, Certificate, ServerKeyExchange (if needed), ServerHelloDone
+            self.send_server_hello()
+            
+            # Step 3: Client (RSA) Key Exchange (and Client Certificate if required)
+            self.send_client_key_exchange()
+            
+            # Step 4: Generate Master Secret
+            self.handle_master_secret()
+            
+            # Step 5: Client ChangeCipherSpec and Finished
+            self.send_client_change_cipher_spec()
+            
+            # Step 6: Server ChangeCipherSpec and Finished
+            self.send_server_change_cipher_spec()
+            
+            # Step 7: Log SSL keys for Wireshark
+            self.handle_ssl_key_log()
+            
+            logging.info("TLS Handshake completed successfully")
+        except Exception as e:
+            logging.error(f"TLS Handshake failed: {str(e)}")
+            raise e
 ```
 
 ### Multiple Blocks Example
