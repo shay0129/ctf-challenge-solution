@@ -8,14 +8,15 @@ This repository provides a simple implementation of AES-128-CBC encryption and d
 - [Subjects](#subjects)
 - [Characterization](#characterization)
 - [Usage](#usage)
-  - [Create TLS Handshake](#create-tls-handshake)
-  - [Client Hello](#client-hello)
-  - [Server Hello](#server-hello)
-  - [Client Key Exchange](#client-key-exchange)
-  - [Calculate Master Secret](#calculate-master-secret)
-  - [Client Change Cipher Spec](#client-change-cipher-spec)
-  - [Server Change Cipher Spec](#server-change-cipher-spec)
-  - [Create SSLKeyLog File](#create-sslkeylog-file)
+  - [Create PCAP File](#create-pcap-file)
+    - [Create TLS Handshake](#create-tls-handshake)
+    - [Client Hello](#client-hello)
+    - [Server Hello](#server-hello)
+    - [Client Key Exchange](#client-key-exchange)
+    - [Calculate Master Secret](#calculate-master-secret)
+    - [Client Change Cipher Spec](#client-change-cipher-spec)
+    - [Server Change Cipher Spec](#server-change-cipher-spec)
+    - [Create SSLKeyLog File](#create-sslkeylog-file)
 - [Building and Integration](#building-and-integration)
 - [Known Limitations](#known-limitations)
 - [Contributing](#contributing)
@@ -58,6 +59,39 @@ If they loaded in crt format, they will receive a message that they must load de
 6. Capturing the resource: The new client manages to get the correct resource sent from the server. The resource is an image file (resource.png) containing the flag in a visible form. Participants need to identify the flag and submit it to complete the challenge.
 ## Usage
 
+### Create PCAP file
+```python
+def main():
+#----------------------------------
+    config = Config()
+    writer = CustomPcapWriter(config)
+    # clear the SSL_KEYLOG_FILE
+    with open(config.SSL_KEYLOG_FILE, "w") as f:
+        pass
+    
+    #----------
+    # Client 1
+    #----------
+    logging.info("\n--- Client 1 Session ---")
+    client1_session = UnifiedTLSSession(writer, config.CLIENT1_IP, config.SERVER_IP, 12345, 443, use_tls=True, use_client_cert=True)
+    client1_session.run_session(config.GET_REQUEST, config.OK_RESPONSE, 'flag.jpeg')
+    client1_session.verify_tls_session()  # Verify TLS session for Client 1
+
+    #----------
+    # Client 2
+    #----------
+    logging.info("\n--- Client 2 Session ---")
+    client2_session = UnifiedTLSSession(writer, config.CLIENT2_IP, config.SERVER_IP, 12346, 443, use_tls=True, use_client_cert=False)
+    client2_session.run_session(config.GET_REQUEST, config.BAD_REQUEST)
+    #client2_session.verify_tls_session()  # Verify TLS session for Client 2
+
+    writer.save_pcap(config.OUTPUT_PCAP)
+    writer.verify_and_log_packets()
+
+    # Optional: Print a summary of the TLS session verifications
+    logging.info("\nTLS Session Verification Summary:")
+    logging.info(f"Client 1: {len(client1_session.encrypted_packets)} packets verified")
+```
 ### Create TLS Handshake
 
 ```python
@@ -117,7 +151,7 @@ def send_client_hello(self)-> None:
         logging.info(f"Client Hello sent from {self.client_ip}")
 ```
 
-### Server Hello
+#### Server Hello
 ```python
 def send_server_hello(self)-> None:      
         self.server_GMT_unix_time, self.server_random_bytes = generate_random()
@@ -177,7 +211,7 @@ def send_server_hello(self)-> None:
         logging.info(f"Server Hello and Certificate sent to {self.client_ip}")
 ```
 
-### Client Key Exchange
+#### Client Key Exchange
 ```python
 def send_client_key_exchange(self)-> None:
         client_certificate = None
@@ -222,7 +256,7 @@ def send_client_key_exchange(self)-> None:
             raise e
 ```
 
-### Calculate Master Secret
+#### Calculate Master Secret
 ```python
 def handle_master_secret(self)-> None:
         # Before generating the master secret,
@@ -257,7 +291,7 @@ def handle_master_secret(self)-> None:
         self.server_write_IV = key_block[112:128]
 ```
 
-### Client Change Cipher Spec
+#### Client Change Cipher Spec
 ```python
 def send_client_change_cipher_spec(self)-> None:
         client_verify_data = self.prf.compute_verify_data(
@@ -276,7 +310,7 @@ def send_client_change_cipher_spec(self)-> None:
         logging.info(f"Client ChangeCipherSpec and Finished sent from {self.client_ip}")
 ```
 
-### Server Change Cipher Spec packet
+#### Server Change Cipher Spec packet
 ```python
 def send_server_change_cipher_spec(self):
         # Server Finished
@@ -299,7 +333,7 @@ def send_server_change_cipher_spec(self):
         logging.info(f"Server Finished sent to {self.client_ip}")
 ```
 
-### Create SSLKeyLog File
+#### Create SSLKeyLog File
 ```python
 def handle_ssl_key_log(self):
         try:
