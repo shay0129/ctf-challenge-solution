@@ -382,9 +382,36 @@ def handle_ssl_key_log(self):
 ```python
 
 ```
-## Building and Integration
+## Analyzing
 
-This implementation is header-only, making it easy to integrate into your projects. Simply include the `AES_128_CBC.h` header file in your source code and link against the necessary libraries.
+used:
+```bash
+tshark -r <pcap_file> -o "tls.keylog_file:<path_to_sslkeylog_file>" -d "tcp.port==<port>,tls" -Y "tls.app_data" -T fields -e tls.app_data
+```
+tshark -r new_output.pcap \
+    -o "tls.keylog_file:sslkeylog_sniffEx.log" \
+    -d "tcp.port==443,tls" \
+    -Y "tls.app_data" -T fields \
+    -e tls.app_data
+
+
+
+tshark -r new_output.pcap \
+    -o "tls.keylog_file:sslkeylog_sniffEx.log" \
+    -o "tls.debug_file:tls_debug.txt" \
+    -V
+
+
+tshark -r output.pcap \
+     -o "tls.keylog_file:sslkeylog_ctf.log" \
+     -d "tcp.port==443,tls" \
+     -o "tls.debug_file:tls_debug.txt" \
+     -Y "tls && ip.src == 192.168.1.1" \
+     -T fields \
+     -e frame.number \
+     -e tls.record.content_type \
+     -e tls.handshake.type \
+     -e tls.app_data
 
 ## Known Limitations
 
