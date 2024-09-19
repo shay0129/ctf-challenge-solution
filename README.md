@@ -1,4 +1,4 @@
-# my CTF challange
+# my CTF - BackGround
 
 This repository provides a simple implementation of ...
 ![alt text](pcap-image.png)
@@ -6,10 +6,10 @@ This repository provides a simple implementation of ...
 
 - [Frame story](#frame-story)
 - [Subjects](#subjects)
-- [Characterization](#characterization)
+- [Challenge Steps](#challenge-steps)
 - [Usage](#usage)
-  - [Create PCAP File](#create-pcap-file)
-    - [Create TLS Handshake](#create-tls-handshake)
+  - [PCAP Creation](#pcap-creation)
+    - [TLS Handshake Steps](#tls-handshake-steps)
     - [Client Hello](#client-hello)
     - [Server Hello](#server-hello)
     - [Client Key Exchange](#client-key-exchange)
@@ -29,45 +29,44 @@ This repository provides a simple implementation of ...
 - [Contributing](#contributing)
 - [License](#license)
 
-## Frame story
+## Challenge Description
 
-
-In 1939, the US Army recruited about 10,000 German boys, mostly Jews, to defeat Nazi Germany in World War II.
-
-In the year 2025, the Richie Boys Force has been re-established with a similar goal, to subdue Iran's Islamic Revolutionary Guard Corps.
-You have been recruited into the Ritchie Boys cyber team, your job is to take over an Iranian server and find the encryption key used by the organization's radios.
-The task will not be easy, but remember that the future of the world depends on you.
-
-To help you with the task, the file of communication with Iranian servers has been attached.
-
-successfully!
+The challenge is themed around the Ritchie Boys, a historical group of German-born individuals recruited by the US Army in World War II for intelligence and psychological warfare against Nazi Germany.
+In the context of the challenge, the Ritchie Boys Force is revived in 2025 to combat Iran's Islamic Revolutionary Guard Corps.
+The player's goal is to compromise an Iranian server and extract the encryption key used for the organization's radio communications.
 
 ## Subjects
-
-1. Wireshark: Understanding how to read and analyze network traffic.
-2. Python programming: writing scripts for decoding and encryption.
-3. Knowledge of operating systems: understanding of the PE format.
+The challenge covers various skills including:
+1. Wireshark: for network traffic analysis
+2. Python scripting: for decryption/encryption.
+3. Operating System knowledge: understanding of the PE format.
 4. Cryptography: use of encryption keys and file decryption.
 5. HTTP protocol: understanding of the protocol and ability to analyze bugs in it.
-6. Reversing: using tools like IDA to analyze and understand binary code.//embedding an exe in a pdf file.
-7. Creating the PCAP using the SCAPY library of PYTHON
-8. כלי ניתוח פרוטוקולים: tshark, openssl בסביבת wsl.
+6. Reverse Engineering: embedding an exe in a pdf file.
+7. PCAP creation with Scapy.
+8. protocol analysis tools like TShark and OpenSSL in WSL environment.
 
-## Characterization
+## Challenge Steps
 
-1. Revealing the files: Participants receive the mission.pdf file. They must discover that the file contains hidden files (steganography) and extract server.exe and client.exe. They find that server.exe is a valid executable, but client.exe appears to be corrupted.
-2. Client fix: Running server.exe alone prints a message with a random sequence of characters. An in-depth analysis of the message and understanding the relationship between it and client.exe reveals that it is used as an encryption key. Participants write a Python script that uses the key to decrypt client.exe and make it a valid executable file.
-3. Communication analysis: The participants run server.exe and client.exe at the same time, but find that the client does not receive any information from the server. Analysis of the capture file (capture.pcapng) attached to mission.pdf reveals the bug in the server: it sends the response "200 OK" to the correct client, but it sends the requested resource to another client that does not exist.
-4. Creating another client: To get around the bug, the participants understand that they must create another client (client2.exe or any other name) that will connect to the server at the same time as the original client. The new client needs to be different from the original so that the server does not identify it as a duplicate.
-The difference between the clients is that the first does not load a certificate (therefore the resource does not reach it), the second does.
-5. After connecting to the server 2 clients: the participants encounter another problem. The server requires client2 to load a self-signed certificate in order for it to send the resource to it.
-The participants are asked to learn by themselves how to create a self-signed ssl certificate of this type (no need for a CA certificate), load it with a code that connects to the server, so that the server recognizes the certificate during the handshake, and sends it the requested resource.
-For this, they must first create a localhost domain in the operating system.
-If they loaded in crt format, they will receive a message that they must load der format.
-6. Capturing the resource: The new client manages to get the correct resource sent from the server. The resource is an image file (resource.png) containing the flag in a visible form. Participants need to identify the flag and submit it to complete the challenge.
+1. Revealing the Files: Participants start with a PDF file (mission.pdf) containing hidden files (server.exe and a seemingly corrupted client.exe) that need to be extracted using steganography techniques.
+
+2. Client Fix: Running server.exe provides a clue in the form of a random character sequence. Deeper analysis reveals this sequence is the encryption key for client.exe. Participants must write a Python script to decrypt client.exe using this key, making it executable.
+
+3. ? Communication analysis: The participants run server.exe and client.exe at the same time, but find that the client does not receive any information from the server. Analysis of the capture file (capture.pcapng) attached to mission.pdf reveals the bug in the server: it sends the response "200 OK" to the correct client, but it sends the requested resource to another client that does not exist.
+
+4. Creating Another Client: To bypass the server's bug, participants must create a new client (client2.exe) that connects concurrently with the original client. This new client needs to be unique enough to avoid being treated as a duplicate by the server. The distinction between the clients is that the first doesn't load a certificate, while the second one does.
+
+5. Self-Signed Certificate: The server requires client2 to present a self-signed certificate. Participants must learn how to generate such a certificate without a CA, integrate it into their client code, and ensure the server recognizes it during the TLS handshake to deliver the requested resource. This might involve setting up a localhost domain on their system. Additionally, they should be prepared to handle a scenario where the server expects the certificate in DER format instead of CRT.
+
+
+6. לאחר שהלקוח השני טען את התעודה, יתבקש ממנו לטעון גם את קובץ הcrs כדי לוודא שאכן ביצע את השלבים של יצירת תעודה, ולא השתמש בסקריפט בפיתון כדי לעשות זאת.
+
+7. Capturing the Resource: The new client successfully receives the resource from the server, which is an image file (resource.png) containing the flag in plain sight. Participants identify and submit this flag to complete the challenge.
+
 ## Usage
 
-### Create PCAP file
+### PCAP Creation
+Code for generating the PCAP file using Scapy, simulating the TLS handshake and application data exchange between the client and server.
 ```python
 def main():
     config = Config()
@@ -97,7 +96,8 @@ Client02 do TLS Handshake without send Client cert.
 Client02 ask a resource from the server, and he dont send it, but send 400 status code.
 The connection between them after handshake is not secure.
 
-### Create TLS Handshake
+### TLS Handshake Steps
+TLS Handshake Steps: Functions for each step of the TLS handshake, including ClientHello, ServerHello, key exchange, and setting up secure communication.
 ```python
 def perform_handshake(self)-> None:
         # According to RFC 5246, the TLS handshake process is as follows:
@@ -337,6 +337,7 @@ def handle_ssl_key_log(self):
             raise Exception("Master secret verification failed")
 ```
 #### Application Data Encryption
+Code for encrypting and decrypting application data using AES-128-CBC with HMAC-SHA256.
 ```python
 def send_application_data(self, data, is_request):
         is_client = is_request
@@ -368,8 +369,8 @@ def send_application_data(self, data, is_request):
         self.send_tls_packet(src_ip, dst_ip, sport, dport)
 ```
 ##### issue
-For now, not succeded to decrypt the pcap with sslkeylog and wireshark.
-After analyse that issue, my foundation:
+An issue is noted with SSL keylog decryption in Wireshark, and potential reasons are explored.
+
 - Checking a "real pcap" decryption procces and compare with my pcap.
 ```bash
 tshark -r <pcap_name.pcap> \
