@@ -37,33 +37,83 @@ The player's goal is to compromise an Iranian server and extract the encryption 
 
 ## Subjects
 The challenge covers various skills including:
-1. Wireshark: for network traffic analysis
-2. Python scripting: for decryption/encryption.
-3. Operating System knowledge: understanding of the PE format.
-4. Cryptography: use of encryption keys and file decryption.
-5. HTTP protocol: understanding of the protocol and ability to analyze bugs in it.
-6. Reverse Engineering: embedding an exe in a pdf file.
+1. Wireshark: Network traffic analysis
+2. Python scripting: PCAP Creation with Scapy, Socket programming.
+3. Operating System knowledge: PE format understanding
+4. Cryptography: Encryption keys and file decryption
+5. HTTP protocol: Analysis and bug identification
+6. Reverse Engineering: Embedding exe in pdf.
 7. PCAP creation with Scapy.
-8. protocol analysis tools like TShark and OpenSSL in WSL environment.
+8. Protocol analysis tools: TShark and OpenSSL in WSL environment
 
 ## Challenge Steps
 
-1. Revealing the Files: Participants start with a PDF file (mission.pdf) containing hidden files (server.exe and a seemingly corrupted client.exe) that need to be extracted using steganography techniques.
+1. Revealing the Files
 
-2. Client Fix: Running server.exe provides a clue in the form of a random character sequence. Deeper analysis reveals this sequence is the encryption key for client.exe. Participants must write a Python script to decrypt client.exe using this key, making it executable.
+- Start with mission.pdf
+- Extract hidden files:
+    - server.exe
+    - Corrupted client.exe
+- Use steganography techniques
 
-3. ? Communication analysis: The participants run server.exe and client.exe at the same time, but find that the client does not receive any information from the server. Analysis of the capture file (capture.pcapng) attached to mission.pdf reveals the bug in the server: it sends the response "200 OK" to the correct client, but it sends the requested resource to another client that does not exist.
+2. Client Fix
+- Run server.exe to get encryption key (random character sequence)
+- Write Python script to decrypt client.exe
+- Make client.exe executable
 
-4. Creating Another Client: To bypass the server's bug, participants must create a new client (client2.exe) that connects concurrently with the original client. This new client needs to be unique enough to avoid being treated as a duplicate by the server. The distinction between the clients is that the first doesn't load a certificate, while the second one does.
+3. Communication Analysis
+- Run server.exe and client.exe simultaneously
+- Analyze capture.pcapng from mission.pdf
+- Discover server's requirement: send resource only to clients with Certificate during TLS Handshake
 
-5. Self-Signed Certificate: The server requires client2 to present a self-signed certificate. Participants must learn how to generate such a certificate without a CA, integrate it into their client code, and ensure the server recognizes it during the TLS handshake to deliver the requested resource. This might involve setting up a localhost domain on their system. Additionally, they should be prepared to handle a scenario where the server expects the certificate in DER format instead of CRT.
+4.  Creating Another Client
+- Create client2.exe
+- Must connect concurrently with original client
+- Ensure client2.exe is unique to avoid server treating it as duplicate
+- Difference: client1 doesn't load certificate, client2 does
 
+5. Self-Signed Certificate
+- Generate self-signed certificate without CA
+- Integrate certificate into client2 code
+- Ensure server recognizes certificate during TLS handshake
+- Possible localhost domain setup
+- Be prepared for server expecting DER format instead of CRT
 
-6. לאחר שהלקוח השני טען את התעודה, יתבקש ממנו לטעון גם את קובץ הcrs כדי לוודא שאכן ביצע את השלבים של יצירת תעודה, ולא השתמש בסקריפט בפיתון כדי לעשות זאת.
+6. CRS File Verification
+- After loading certificate, client2 must also load CRS file
+- Verifies proper certificate creation steps
+- Prevents bypass using Python script
 
-7. Capturing the Resource: The new client successfully receives the resource from the server, which is an image file (resource.png) containing the flag in plain sight. Participants identify and submit this flag to complete the challenge.
+7. Capturing the Resource
+- client2 receives resource.png from server
+- Image contains flag in plain sight
+- Participants submit flag to complete challenge
 
 ## Usage
+
+### PE stole
+PDF Structure Hint
+
+The PDF file contains two hidden executables:
+
+1. server.exe: A standard PE file
+2. client1.exe: An encrypted PE file
+
+Structure:
+[PDF Content]
+[server.exe (PE format)]
+[Magic Number: 0xDEADBEEF + Encrypted Key]
+[Encrypted client1.exe]
+
+Hint: 
+- Look for the PE header to find the start of server.exe. 
+- The magic number 0xDEADBEEF marks the end of server.exe and the start of the encrypted client1.exe.
+- The encryption key for client1.exe is hidden within the magic number itself.
+
+Challenge:
+Can you find the encryption key hidden in the magic number? 
+It's not just 0xDEADBEEF - there's more to it!
+
 
 ### PCAP Creation
 Code for generating the PCAP file using Scapy, simulating the TLS handshake and application data exchange between the client and server.

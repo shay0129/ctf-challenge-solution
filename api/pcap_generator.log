@@ -1,16 +1,16 @@
-2024-09-18 22:50:51,052 - INFO - 
+2024-09-19 12:04:49,680 - INFO - 
 --- Client 1 Session ---
-2024-09-18 22:50:51,074 - INFO - Keys and certificate successfully loaded for server: ../api/server.der
-2024-09-18 22:50:51,074 - INFO - Certificate subject: <Name(C=IL,ST=Jerusalem,L=Kohav Yaakov,O=Lev Academic Center,OU=IT Department,CN=Pasdaran.local,1.2.840.113549.1.9.1=myctf@example.com)>
-2024-09-18 22:50:51,074 - INFO - Certificate validity: 2024-09-15 09:07:15+00:00 to 2025-09-15 09:07:15+00:00
-2024-09-18 22:50:51,074 - INFO - Generated client_random: 66eb2f1b75f382f88a5ccf70804fb91adcf664aa54b4b19716d86930caa72894
-2024-09-18 22:50:51,074 - INFO - Client Hello sent from 192.168.1.1
-2024-09-18 22:50:51,074 - INFO - Generated server_random: 66eb2f1bc18e1a9f0ea41d0e82437c4ae5d79c00bddaf712a1a97cd9f2dc5a99
-2024-09-18 22:50:51,074 - INFO - Generated session_id: 27a0d8a437ca24f55c52540ef693ca3013e885021e225cb5b398319b5b6b9a4e
-2024-09-18 22:50:51,074 - INFO - Server certificate loaded. Subject: <Name(C=IL,ST=Jerusalem,L=Kohav Yaakov,O=Lev Academic Center,OU=IT Department,CN=Pasdaran.local,1.2.840.113549.1.9.1=myctf@example.com)>
-2024-09-18 22:50:51,074 - INFO - Server certificate public key: 21375138086037084389426530392990647308049292022233555915101869938133189925529364770349917472221924751849356561848925472179297312552921168546163403305437441869753840146778864320425508610451826135735401934333778541547085048566228430780843025077140891083922893721992857224624238155771647332188810959564263128498682157287085418231871576202444866500370894722567237911968881651638557068391829335183312655905850317806040253945834315321925487346537385783011407079020315286505509979165729232644441672558546873735734633992204994926791710188134685182348571805570203839036500204261869276055358017182801293646849442102288147771527
-2024-09-18 22:50:51,074 - INFO - Server certificate loaded. Subject: <Name(C=IL,ST=Jerusalem,L=Kohav Yaakov,O=Lev Academic Center,OU=IT Department,CN=Pasdaran.local,1.2.840.113549.1.9.1=myctf@example.com)>
-2024-09-18 22:50:51,074 - INFO - Server certificate public key: -----BEGIN PUBLIC KEY-----
+2024-09-19 12:04:49,695 - INFO - Keys and certificate successfully loaded for server: ../api/server.der
+2024-09-19 12:04:49,695 - INFO - Certificate subject: <Name(C=IL,ST=Jerusalem,L=Kohav Yaakov,O=Lev Academic Center,OU=IT Department,CN=Pasdaran.local,1.2.840.113549.1.9.1=myctf@example.com)>
+2024-09-19 12:04:49,695 - INFO - Certificate validity: 2024-09-15 09:07:15+00:00 to 2025-09-15 09:07:15+00:00
+2024-09-19 12:04:49,695 - INFO - Generated client_random: 66ebe931995a4edcf5e5bcf49cf0e58abaf26fe7c2c1cef82530ff951fb2748a
+2024-09-19 12:04:49,695 - INFO - Client Hello sent from 192.168.1.1
+2024-09-19 12:04:49,695 - INFO - Generated server_random: 66ebe931ae34076cfc558d8196506fab9149fa745de2f9e036ef77e121014982
+2024-09-19 12:04:49,695 - INFO - Generated session_id: 5e1958b52a9020f2722dc329bef24910dc90cbe10a8d7323ffadab3f53f96355
+2024-09-19 12:04:49,695 - INFO - Server certificate loaded. Subject: <Name(C=IL,ST=Jerusalem,L=Kohav Yaakov,O=Lev Academic Center,OU=IT Department,CN=Pasdaran.local,1.2.840.113549.1.9.1=myctf@example.com)>
+2024-09-19 12:04:49,695 - INFO - Server certificate public key: 21375138086037084389426530392990647308049292022233555915101869938133189925529364770349917472221924751849356561848925472179297312552921168546163403305437441869753840146778864320425508610451826135735401934333778541547085048566228430780843025077140891083922893721992857224624238155771647332188810959564263128498682157287085418231871576202444866500370894722567237911968881651638557068391829335183312655905850317806040253945834315321925487346537385783011407079020315286505509979165729232644441672558546873735734633992204994926791710188134685182348571805570203839036500204261869276055358017182801293646849442102288147771527
+2024-09-19 12:04:49,695 - INFO - Server certificate loaded. Subject: <Name(C=IL,ST=Jerusalem,L=Kohav Yaakov,O=Lev Academic Center,OU=IT Department,CN=Pasdaran.local,1.2.840.113549.1.9.1=myctf@example.com)>
+2024-09-19 12:04:49,695 - INFO - Server certificate public key: -----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqVLeoUqcSV33pzJ4GDy2
 UJPy4Lv3/FUlO8e/Jv5OvmNGQVICvTZejupnjnA3cq3KbwVf+tussfmGekV1i3qS
 NTkDu03L/sd4kld8cF44Q9/NPgW6RVsrLWHU3VKmu5BYfXcBn/SnZEM0s9d5DvWG
@@ -20,81 +20,81 @@ GnOHoDJe743sO7vUMbdTxWFvwFG9eOMgVykDXkK71Mh9rAlzi7hv7X1fdQVs5tNw
 hwIDAQAB
 -----END PUBLIC KEY-----
 
-2024-09-18 22:50:51,074 - INFO - Sending server certificate. Size: 1399 bytes
-2024-09-18 22:50:51,074 - INFO - Server Hello cipher: 60
-2024-09-18 22:50:51,074 - INFO - Server Hello version: 0x303
-2024-09-18 22:50:51,074 - INFO - Server Hello extensions: [<TLS_Ext_SignatureAlgorithms  sig_algs=[sha256+rsaepss] |>, <TLS_Ext_ExtendedMasterSecret  |>, <TLS_Ext_EncryptThenMAC  |>]
-2024-09-18 22:50:51,074 - INFO - Server selected cipher suite: 60
-2024-09-18 22:50:51,074 - INFO - Using SSL keylog file: ../api/sslkeylog_ctf.log
-2024-09-18 22:50:51,074 - INFO - Server Hello and Certificate sent to 192.168.1.1
-2024-09-18 22:50:51,074 - INFO - Client Certificate sent from 192.168.1.1. Certificate size: 1599 bytes
-2024-09-18 22:50:51,074 - INFO - Client generated pre_master_secret: 03039bffa322eaa0c35cb375a38507177c323bd618599787a0cbda8534d3ec6aca430c851acbc6336ab74f48e013ee96
-2024-09-18 22:50:51,074 - INFO - Encrypted pre_master_secret length: 256
-2024-09-18 22:50:51,074 - INFO - Client Key Exchange sent from 192.168.1.1
-2024-09-18 22:50:51,074 - INFO - Server decrypted pre_master_secret: 03039bffa322eaa0c35cb375a38507177c323bd618599787a0cbda8534d3ec6aca430c851acbc6336ab74f48e013ee96
-2024-09-18 22:50:51,074 - INFO - Comparison successful
-2024-09-18 22:50:51,074 - INFO - Pre master secret encrypted matches.
-2024-09-18 22:50:51,090 - INFO - Client ChangeCipherSpec and Finished sent from 192.168.1.1
-2024-09-18 22:50:51,090 - INFO - Server decrypted pre_master_secret: 03039bffa322eaa0c35cb375a38507177c323bd618599787a0cbda8534d3ec6aca430c851acbc6336ab74f48e013ee96
-2024-09-18 22:50:51,090 - INFO - Server Finished sent to 192.168.1.1
-2024-09-18 22:50:51,090 - INFO - Logged master secret to ../api/sslkeylog_ctf.log: CLIENT_RANDOM 66eb2f1b75f382f88a5ccf70804fb91adcf664aa54b4b19716d86930caa72894 479d1d5da49c69a57cf0277aa6ab96e9ee7338c4428169f6cbec96d66a4816926475dc690c071e3d60d1dbbe729393d2
-2024-09-18 22:50:51,090 - INFO - Comparison successful
-2024-09-18 22:50:51,090 - INFO - Comparison successful
-2024-09-18 22:50:51,090 - INFO - Derived master_secret: 479d1d5da49c69a57cf0277aa6ab96e9ee7338c4428169f6cbec96d66a4816926475dc690c071e3d60d1dbbe729393d2
-2024-09-18 22:50:51,090 - INFO - TLS Handshake completed successfully
-2024-09-18 22:50:51,090 - INFO - 
+2024-09-19 12:04:49,695 - INFO - Sending server certificate. Size: 1399 bytes
+2024-09-19 12:04:49,695 - INFO - Server Hello cipher: 60
+2024-09-19 12:04:49,695 - INFO - Server Hello version: 0x303
+2024-09-19 12:04:49,695 - INFO - Server Hello extensions: [<TLS_Ext_SignatureAlgorithms  sig_algs=[sha256+rsaepss] |>, <TLS_Ext_ExtendedMasterSecret  |>, <TLS_Ext_EncryptThenMAC  |>]
+2024-09-19 12:04:49,695 - INFO - Server selected cipher suite: 60
+2024-09-19 12:04:49,695 - INFO - Using SSL keylog file: ../api/sslkeylog_ctf.log
+2024-09-19 12:04:49,711 - INFO - Server Hello and Certificate sent to 192.168.1.1
+2024-09-19 12:04:49,711 - INFO - Client Certificate sent from 192.168.1.1. Certificate size: 1599 bytes
+2024-09-19 12:04:49,711 - INFO - Client generated pre_master_secret: 03030dc2a05c05c379a57b5346dde9dfd30943bc4b6d69b6ce7d6229af0cb2450720297b2bd8ba874854447a88e459e1
+2024-09-19 12:04:49,711 - INFO - Encrypted pre_master_secret length: 256
+2024-09-19 12:04:49,711 - INFO - Client Key Exchange sent from 192.168.1.1
+2024-09-19 12:04:49,711 - INFO - Server decrypted pre_master_secret: 03030dc2a05c05c379a57b5346dde9dfd30943bc4b6d69b6ce7d6229af0cb2450720297b2bd8ba874854447a88e459e1
+2024-09-19 12:04:49,711 - INFO - Comparison successful
+2024-09-19 12:04:49,711 - INFO - Pre master secret encrypted matches.
+2024-09-19 12:04:49,711 - INFO - Client ChangeCipherSpec and Finished sent from 192.168.1.1
+2024-09-19 12:04:49,711 - INFO - Server decrypted pre_master_secret: 03030dc2a05c05c379a57b5346dde9dfd30943bc4b6d69b6ce7d6229af0cb2450720297b2bd8ba874854447a88e459e1
+2024-09-19 12:04:49,711 - INFO - Server Finished sent to 192.168.1.1
+2024-09-19 12:04:49,711 - INFO - Logged master secret to ../api/sslkeylog_ctf.log: CLIENT_RANDOM 66ebe931995a4edcf5e5bcf49cf0e58abaf26fe7c2c1cef82530ff951fb2748a 5c0bcf87c0212fe384958b488a22f519778e7ef122ccfcd420b94008c27bf0b247601b108ac16d7014ae9cf4d8c50e10
+2024-09-19 12:04:49,733 - INFO - Comparison successful
+2024-09-19 12:04:49,733 - INFO - Comparison successful
+2024-09-19 12:04:49,733 - INFO - Derived master_secret: 5c0bcf87c0212fe384958b488a22f519778e7ef122ccfcd420b94008c27bf0b247601b108ac16d7014ae9cf4d8c50e10
+2024-09-19 12:04:49,733 - INFO - TLS Handshake completed successfully
+2024-09-19 12:04:49,733 - INFO - 
 Starting TLS session verification for 192.168.1.1
-2024-09-18 22:50:51,090 - INFO - 
+2024-09-19 12:04:49,733 - INFO - 
 Verifying encrypted packet 1
-2024-09-18 22:50:51,090 - INFO - Original message length: 42
-2024-09-18 22:50:51,090 - INFO - Encrypted packet length: 96
-2024-09-18 22:50:51,090 - INFO - Original message:
-2024-09-18 22:50:51,090 - INFO - GET /resource HTTP/1.1
-2024-09-18 22:50:51,090 - INFO - Catch The Flag
-2024-09-18 22:50:51,090 - INFO - 
-2024-09-18 22:50:51,090 - INFO - 
-2024-09-18 22:50:51,090 - INFO - Comparison successful
-2024-09-18 22:50:51,090 - INFO - Decrypted message matches original message
-2024-09-18 22:50:51,090 - INFO - Decrypted message: b'GET /resource HTTP/1.1\r\nCatch The Flag\r\n\r\n'
-2024-09-18 22:50:51,090 - INFO - 
+2024-09-19 12:04:49,733 - INFO - Original message length: 42
+2024-09-19 12:04:49,733 - INFO - Encrypted packet length: 96
+2024-09-19 12:04:49,733 - INFO - Original message:
+2024-09-19 12:04:49,733 - INFO - GET /resource HTTP/1.1
+2024-09-19 12:04:49,733 - INFO - Catch The Flag
+2024-09-19 12:04:49,733 - INFO - 
+2024-09-19 12:04:49,733 - INFO - 
+2024-09-19 12:04:49,733 - INFO - Comparison successful
+2024-09-19 12:04:49,733 - INFO - Decrypted message matches original message
+2024-09-19 12:04:49,733 - INFO - Decrypted message: b'GET /resource HTTP/1.1\r\nCatch The Flag\r\n\r\n'
+2024-09-19 12:04:49,733 - INFO - 
 Verifying encrypted packet 2
-2024-09-18 22:50:51,090 - INFO - Original message length: 78
-2024-09-18 22:50:51,090 - INFO - Encrypted packet length: 128
-2024-09-18 22:50:51,090 - INFO - Original message:
-2024-09-18 22:50:51,090 - INFO - HTTP/1.1 200 OK
-2024-09-18 22:50:51,090 - INFO - Content-Type: text/plain
-2024-09-18 22:50:51,090 - INFO - Content-Length: 12
-2024-09-18 22:50:51,090 - INFO - 
-2024-09-18 22:50:51,090 - INFO - Hello, world!
-2024-09-18 22:50:51,090 - INFO - Comparison successful
-2024-09-18 22:50:51,090 - INFO - Decrypted message matches original message
-2024-09-18 22:50:51,090 - INFO - Decrypted message: b'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 12\r\n\r\nHello, world!'
-2024-09-18 22:50:51,090 - INFO - 
+2024-09-19 12:04:49,733 - INFO - Original message length: 78
+2024-09-19 12:04:49,733 - INFO - Encrypted packet length: 128
+2024-09-19 12:04:49,733 - INFO - Original message:
+2024-09-19 12:04:49,733 - INFO - HTTP/1.1 200 OK
+2024-09-19 12:04:49,733 - INFO - Content-Type: text/plain
+2024-09-19 12:04:49,733 - INFO - Content-Length: 12
+2024-09-19 12:04:49,733 - INFO - 
+2024-09-19 12:04:49,733 - INFO - Hello, world!
+2024-09-19 12:04:49,733 - INFO - Comparison successful
+2024-09-19 12:04:49,733 - INFO - Decrypted message matches original message
+2024-09-19 12:04:49,733 - INFO - Decrypted message: b'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 12\r\n\r\nHello, world!'
+2024-09-19 12:04:49,733 - INFO - 
 Verifying encrypted packet 3
-2024-09-18 22:50:51,090 - INFO - Original message length: 1855
-2024-09-18 22:50:51,090 - INFO - Encrypted packet length: 1904
-2024-09-18 22:50:51,090 - INFO - Original message:
-2024-09-18 22:50:51,090 - INFO - Binary data (first 100 bytes): ffd8ffe000104a46494600010100000100010000ffdb008400090607080706090807080a0a090b0d160f0d0c0c0d1b14151016201d2222201d1f1f2428342c242631271f1f2d3d2d3135373a3a3a232b3f443f384334393a37010a0a0a0d0c0d1a0f0f1a
-2024-09-18 22:50:51,090 - INFO - ...
-2024-09-18 22:50:51,090 - INFO - Comparison successful
-2024-09-18 22:50:51,090 - INFO - Decrypted message matches original message
-2024-09-18 22:50:51,090 - INFO - Decrypted message: b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00\xff\xdb\x00\x84\x00\t\x06\x07\x08\x07\x06\t\x08\x07\x08\n\n\t\x0b\r\x16\x0f\r\x0c\x0c\r\x1b\x14\x15\x10\x16 \x1d"" \x1d\x1f\x1f$(4,$&1\'\x1f\x1f-=-157:::#+?D?8C49:7\x01\n\n\n\r\x0c\r\x1a\x0f\x0f\x1a7%\x1f%77777777777777777777777777777777777777777777777777\xff\xc0\x00\x11\x08\x00Z\x00|\x03\x01"\x00\x02\x11\x01\x03\x11\x01\xff\xc4\x00\x1a\x00\x01\x00\x03\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05\x07\x08\x06\x03\x04\xff\xc4\x006\x10\x00\x00\x04\x04\x03\x05\x06\x05\x04\x03\x01\x00\x00\x00\x00\x00\x00\x01\x02\x04\x03\x05\x06\xd1\x11\x16U\x15!\x92\x94\xa2\x12\x171AT\x93\x07\x13"2a#Qq\xb1B\x81\x91\x14\xff\xc4\x00\x1a\x01\x01\x00\x03\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x04\x05\x03\x06\x01\xff\xc4\x00*\x11\x00\x01\x02\x04\x04\x06\x02\x03\x01\x00\x00\x00\x00\x00\x00\x00\x00\x01\x02\x03\x14QR\x04\x12\x15\xa1\x11\x131\x91\xd1\xe1\x05!Aq\x81"\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00?\x00\xbc@e]\xa0\xfb\xd6\xb9\xf7\x95p\xda\x0f\xbdk\x9fyW\x1b\x9a+\xaf\xdb\xd9Fu(j\xa0\x19Wh>\xf5\xae}\xe5\\6\x83\xefZ\xe7\xdeU\xc3Eu\xfb{\x13\xa9CU\x00\xca\xbbA\xf7\xads\xef*\xe1\xb4\x1fz\xd7>\xf2\xae\x1a+\xaf\xdb\xd8\x9dJ\x1a\xa8\x06U\xda\x0f\xbdk\x9fyW\r\xa0\xfb\xd6\xb9\xf7\x95p\xd1]~\xde\xc4\xeaP\xd5@2\xae\xd0}\xeb\\\xfb\xca\xb8m\x07\xde\xb5\xcf\xbc\xab\x86\x8a\xeb\xf6\xf6\'R\x86\xaa\x01\x95v\x83\xefZ\xe7\xdeU\xc3h>\xf5\xae}\xe5\\4W_\xb7\xb1:\x945P\x0c\xab\xb4\x1fz\xd7>\xf2\xae\x1bA\xf7\xads\xef*\xe1\xa2\xba\xfd\xbd\x89\xd4\xa1\xaa\x80e]\xa0\xfb\xd6\xb9\xf7\x95p\xda\x0f\xbdk\x9fyW\r\x15\xd7\xed\xecN\xa5\t\xbc\x85Uh\x8e8\x91p\xc8UV\x88\xe3\x89\x17\x1a<\x07=f5\xa9\xbf\x92RL\xaa\x99\xc3!UZ#\x8e$\\2\x15U\xa28\xe2E\xc6\x8f\x00\xd6cZ\x9b\xf9\x12L\xaa\x99\xc3!UZ#\x8e$\\2\x15U\xa28\xe2E\xc6\x8f\x00\xd6cZ\x9b\xf9\x12L\xaa\x99\xc3!UZ#\x8e$\\2\x15U\xa28\xe2E\xc6\x8f\x1c\x17\xc4j\xe9T\xd3\xc9{6$\x98\x91\xce"c9I\xef\xfd\x1c~\xdf\xc1\xab~\xff\x00,?#\xac\x1f\x93\xc4\xc6~F58\xff\x00|\x91~\x16\x13\x13\x8a\xaa\x95nB\xaa\xb4G\x1cH\xb8d*\xabDq\xc4\x8b\x8d\x10\xc1\xe4\t\x83(\x0f\x1a,\xa2@\x8e\x82\\5\x17\x99\x19\x0fq\xc9~b:/\x05jo\xe4\x94\x9c:\x99\xc3!UZ#\x8e$\\2\x15U\xa28\xe2E\xc6\x8f\x00\xd6cZ\x9b\xf9\x12L\xaa\x99\xc3!UZ#\x8e$\\2\x15U\xa28\xe2E\xc6\x8f\x00\xd6cZ\x9b\xf9\x12L\xaa\x99\xc3!UZ#\x8e$\\2\x15U\xa28\xe2E\xc6\x8f\x00\xd6cZ\x9b\xf9\x12L\xaa\x80\x00\x18\xe5\xc0\x00\x00\x00\x8c\xa9\x1c\xcc\x99\xc9\\\xba\x93A\x85\x1d\xdc\x14\xf6\xd3\x06)\x19\x92\xc8\xbcH\xb02<p\xc7\x0f\xc8\x93\x01&\xaf\x05E\xe1\xc4\xf8\xbfhS\xd0>\'U.%\xd1\xe60e\x12\xf5\xb3nd\x98\xb1K\xb5\x82\x0c\xf0\xc3\x1f\xaf\x1d\xf8\x90\x82b\xd6\xa6\x9c\xb8\x7f<:|\xa6E4\x86\xb8\x7f2!`\x94$\xf7}\x1fQ\x19a\x81\x11\x1f\xe0yV-e\x8dk\xa7R\xd6\xefW\x02V\xe1\xcc5<$}\xb0\x94g\x8a\x8b\x0f\x03\xec\xf6\x8c\xff\x00\x18\x99y\x0b\xf5\xa4\x08\rZ\xc1n\xd5\tD\x08H$CJ|\t$[\xb0\x1bq\xe3C\xc2\xb1\xae\x86\xc4\xff\x00_\xbe\x9d\xeaRc]\x11U\x1c\xbd\nN\x97\xa9*\xdaj&Xo,\x87\x19\xc9(\xd7\r\xbb\x82>\xdaH\xcb\xb4d\x9c\x14De\xe2\x7f\xf4utUmQTu\x02\xe5\xf1\x981\x83\x01\xb6&\xee"\x12\xb34a\xb8\x88\x8f\xb5\x86&\x7f\xd1\x9f\x90\xf8\xfe6Bj\xd7e\xcd 8T\t\xb2Vh\x86p\xcf\x05*\x19o\xc7\x1f.\xc9\x99q\x18\x9d\xf8D\xcd\x83z>\x0cf+(\x91\\,\xd4\xe5Xo(\x85\xbb\xb3\xfc\x11a\xfd\xf9\x88Gt\'\xe1\xb9\xea\xc4\xe2\xef\xaf\xef\xe5ICG$N_\x1f\xa4;`\x00\x18\xa5\xc0\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00#*Go\x99I\\\xc6\x94\xb4[\xa7\xdd\x9e\xcc\x08I"\xfb\x8fq\x19\xe3\xe4^?\xe8I\x80\x93W\x82\xa2\xaaq>/C?\xc2\xa6j\xc4\xcb\x9e\xb3\x8bM|\xf5\xbc\x88\x98\x91\x1dE\xdf\x19*#\xc7q\xf6\xf0\xf13\xc7v\xfcLJS\xf5\xb5b\xd1\xa2\xe5\re\xed\x1c\xaaW\x08\xca1\xb8J\xbed4$\xf0>\xd7\xd6_o\x87\x87\xec.\xc1U|Q\xa4^\xc7\x9c6\x99H\x90\xbe\xdc\xc4\xc9\xa3\xa4\xc33"\xc4\xf7\x12\x95\x87\xf8\x99\x16\x07\xe5\xb8\xbfq\xb1\x07\x1a\xccK\xb2Fjo\xd7\xbd\n\x8f\x82\xb0\xd33\x15Na\xbb\xca\xa6\xaa\x9e"\xa4\x85&\x851\xff\x00\xcd\xfaH\x84h?\x90\x83"\xf0\xc0\xd4F~8\xf8\xf8\x98\xe9~\x18\xb2\xa9d3\xb8\xd0\x1e\xc9\xa3\xc0\x96=35\x11\x19\x1a`,\xbe\xd3/\xa8\xcf\x0c>\x9f3\xf0\xfd\x85\x8dOJ\x1b\xc8d\xed\xa5\xadK\xe8\x82\x8c\rXoZ\xbcMG\xfc\x9e&$G\x08\xff\x00 \x8ek\xa1\xb5\x89\x97\xa2u\xe9\xf8&\xc8\x1c\x15\x1c\xab\xf6\x00\x00f\x16@\x00\x00\x00\x00\x00\xa5;\xe2\x9c\xe9\xac:\xee\x1d\xf1Nt\xd6\x1dw\x15\xb8\x0f_\xa7\xe1\xac1\xe6"\xd4\xb2;\xe2\x9c\xe9\xac:\xee\x1d\xf1Nt\xd6\x1dw\x15\xb8\x06\x9f\x86\xb0LE\xa9dw\xc59\xd3Xu\xdc;\xe2\x9c\xe9\xac:\xee+p\r?\r`\x98\x8bR\xc8\xef\x8as\xa6\xb0\xeb\xb8w\xc59\xd3Xu\xdcV\xe0\x1a~\x1a\xc11\x16\xa5\x91\xdf\x14\xe7Ma\xd7p\xef\x8as\xa6\xb0\xeb\xb8\xad\xc04\xfc5\x82b-K#\xbe)\xce\x9a\xc3\xae\xe1\xdf\x14\xe7Ma\xd7q[\x80i\xf8k\x04\xc4Z\x96G|S\x9d5\x87]\xc3\xbe)\xce\x9a\xc3\xae\xe2\xb7\x00\xd3\xf0\xd6\t\x88\xb5,\x8e\xf8\xa7:k\x0e\xbb\x87|S\x9d5\x87]\xc5n\x01\xa7\xe1\xac\x13\x11ji\x8c\xa1M\xe8R\xeeY6\x0c\xa1M\xe8R\xeeY6\x13`<\xa7:%\xcb\xdc\xd6\xc8\xda\x10\x99B\x9b\xd0\xa5\xdc\xb2l\x19B\x9b\xd0\xa5\xdc\xb2l&\xc09\xd1.^\xe3#hBe\noB\x97r\xc9\xb0e\noB\x97r\xc9\xb0\x9b\x00\xe7D\xb9{\x8c\x8d\xa1\t\x94)\xbd\n]\xcb&\xc1\x94)\xbd\n]\xcb&\xc2l\x03\x9d\x12\xe5\xee26\x84&P\xa6\xf4)w,\x9b\x06P\xa6\xf4)w,\x9b\t\xb0\x0etK\x97\xb8\xc8\xda\x10\x99B\x9b\xd0\xa5\xdc\xb2l\x19B\x9b\xd0\xa5\xdc\xb2l&\xc09\xd1.^\xe3#hBe\noB\x97r\xc9\xb0e\noB\x97r\xc9\xb0\x9b\x00\xe7D\xb9{\x8c\x8d\xa1\t\x94)\xbd\n]\xcb&\xc1\x94)\xbd\n]\xcb&\xc2l\x03\x9d\x12\xe5\xee26\x87\xff\xd9'
-2024-09-18 22:50:51,105 - INFO - 
+2024-09-19 12:04:49,733 - INFO - Original message length: 1855
+2024-09-19 12:04:49,733 - INFO - Encrypted packet length: 1904
+2024-09-19 12:04:49,733 - INFO - Original message:
+2024-09-19 12:04:49,733 - INFO - Binary data (first 100 bytes): ffd8ffe000104a46494600010100000100010000ffdb008400090607080706090807080a0a090b0d160f0d0c0c0d1b14151016201d2222201d1f1f2428342c242631271f1f2d3d2d3135373a3a3a232b3f443f384334393a37010a0a0a0d0c0d1a0f0f1a
+2024-09-19 12:04:49,733 - INFO - ...
+2024-09-19 12:04:49,733 - INFO - Comparison successful
+2024-09-19 12:04:49,733 - INFO - Decrypted message matches original message
+2024-09-19 12:04:49,733 - INFO - Decrypted message: b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00\xff\xdb\x00\x84\x00\t\x06\x07\x08\x07\x06\t\x08\x07\x08\n\n\t\x0b\r\x16\x0f\r\x0c\x0c\r\x1b\x14\x15\x10\x16 \x1d"" \x1d\x1f\x1f$(4,$&1\'\x1f\x1f-=-157:::#+?D?8C49:7\x01\n\n\n\r\x0c\r\x1a\x0f\x0f\x1a7%\x1f%77777777777777777777777777777777777777777777777777\xff\xc0\x00\x11\x08\x00Z\x00|\x03\x01"\x00\x02\x11\x01\x03\x11\x01\xff\xc4\x00\x1a\x00\x01\x00\x03\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05\x07\x08\x06\x03\x04\xff\xc4\x006\x10\x00\x00\x04\x04\x03\x05\x06\x05\x04\x03\x01\x00\x00\x00\x00\x00\x00\x01\x02\x04\x03\x05\x06\xd1\x11\x16U\x15!\x92\x94\xa2\x12\x171AT\x93\x07\x13"2a#Qq\xb1B\x81\x91\x14\xff\xc4\x00\x1a\x01\x01\x00\x03\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x04\x05\x03\x06\x01\xff\xc4\x00*\x11\x00\x01\x02\x04\x04\x06\x02\x03\x01\x00\x00\x00\x00\x00\x00\x00\x00\x01\x02\x03\x14QR\x04\x12\x15\xa1\x11\x131\x91\xd1\xe1\x05!Aq\x81"\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00?\x00\xbc@e]\xa0\xfb\xd6\xb9\xf7\x95p\xda\x0f\xbdk\x9fyW\x1b\x9a+\xaf\xdb\xd9Fu(j\xa0\x19Wh>\xf5\xae}\xe5\\6\x83\xefZ\xe7\xdeU\xc3Eu\xfb{\x13\xa9CU\x00\xca\xbbA\xf7\xads\xef*\xe1\xb4\x1fz\xd7>\xf2\xae\x1a+\xaf\xdb\xd8\x9dJ\x1a\xa8\x06U\xda\x0f\xbdk\x9fyW\r\xa0\xfb\xd6\xb9\xf7\x95p\xd1]~\xde\xc4\xeaP\xd5@2\xae\xd0}\xeb\\\xfb\xca\xb8m\x07\xde\xb5\xcf\xbc\xab\x86\x8a\xeb\xf6\xf6\'R\x86\xaa\x01\x95v\x83\xefZ\xe7\xdeU\xc3h>\xf5\xae}\xe5\\4W_\xb7\xb1:\x945P\x0c\xab\xb4\x1fz\xd7>\xf2\xae\x1bA\xf7\xads\xef*\xe1\xa2\xba\xfd\xbd\x89\xd4\xa1\xaa\x80e]\xa0\xfb\xd6\xb9\xf7\x95p\xda\x0f\xbdk\x9fyW\r\x15\xd7\xed\xecN\xa5\t\xbc\x85Uh\x8e8\x91p\xc8UV\x88\xe3\x89\x17\x1a<\x07=f5\xa9\xbf\x92RL\xaa\x99\xc3!UZ#\x8e$\\2\x15U\xa28\xe2E\xc6\x8f\x00\xd6cZ\x9b\xf9\x12L\xaa\x99\xc3!UZ#\x8e$\\2\x15U\xa28\xe2E\xc6\x8f\x00\xd6cZ\x9b\xf9\x12L\xaa\x99\xc3!UZ#\x8e$\\2\x15U\xa28\xe2E\xc6\x8f\x1c\x17\xc4j\xe9T\xd3\xc9{6$\x98\x91\xce"c9I\xef\xfd\x1c~\xdf\xc1\xab~\xff\x00,?#\xac\x1f\x93\xc4\xc6~F58\xff\x00|\x91~\x16\x13\x13\x8a\xaa\x95nB\xaa\xb4G\x1cH\xb8d*\xabDq\xc4\x8b\x8d\x10\xc1\xe4\t\x83(\x0f\x1a,\xa2@\x8e\x82\\5\x17\x99\x19\x0fq\xc9~b:/\x05jo\xe4\x94\x9c:\x99\xc3!UZ#\x8e$\\2\x15U\xa28\xe2E\xc6\x8f\x00\xd6cZ\x9b\xf9\x12L\xaa\x99\xc3!UZ#\x8e$\\2\x15U\xa28\xe2E\xc6\x8f\x00\xd6cZ\x9b\xf9\x12L\xaa\x99\xc3!UZ#\x8e$\\2\x15U\xa28\xe2E\xc6\x8f\x00\xd6cZ\x9b\xf9\x12L\xaa\x80\x00\x18\xe5\xc0\x00\x00\x00\x8c\xa9\x1c\xcc\x99\xc9\\\xba\x93A\x85\x1d\xdc\x14\xf6\xd3\x06)\x19\x92\xc8\xbcH\xb02<p\xc7\x0f\xc8\x93\x01&\xaf\x05E\xe1\xc4\xf8\xbfhS\xd0>\'U.%\xd1\xe60e\x12\xf5\xb3nd\x98\xb1K\xb5\x82\x0c\xf0\xc3\x1f\xaf\x1d\xf8\x90\x82b\xd6\xa6\x9c\xb8\x7f<:|\xa6E4\x86\xb8\x7f2!`\x94$\xf7}\x1fQ\x19a\x81\x11\x1f\xe0yV-e\x8dk\xa7R\xd6\xefW\x02V\xe1\xcc5<$}\xb0\x94g\x8a\x8b\x0f\x03\xec\xf6\x8c\xff\x00\x18\x99y\x0b\xf5\xa4\x08\rZ\xc1n\xd5\tD\x08H$CJ|\t$[\xb0\x1bq\xe3C\xc2\xb1\xae\x86\xc4\xff\x00_\xbe\x9d\xeaRc]\x11U\x1c\xbd\nN\x97\xa9*\xdaj&Xo,\x87\x19\xc9(\xd7\r\xbb\x82>\xdaH\xcb\xb4d\x9c\x14De\xe2\x7f\xf4utUmQTu\x02\xe5\xf1\x981\x83\x01\xb6&\xee"\x12\xb34a\xb8\x88\x8f\xb5\x86&\x7f\xd1\x9f\x90\xf8\xfe6Bj\xd7e\xcd 8T\t\xb2Vh\x86p\xcf\x05*\x19o\xc7\x1f.\xc9\x99q\x18\x9d\xf8D\xcd\x83z>\x0cf+(\x91\\,\xd4\xe5Xo(\x85\xbb\xb3\xfc\x11a\xfd\xf9\x88Gt\'\xe1\xb9\xea\xc4\xe2\xef\xaf\xef\xe5ICG$N_\x1f\xa4;`\x00\x18\xa5\xc0\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00#*Go\x99I\\\xc6\x94\xb4[\xa7\xdd\x9e\xcc\x08I"\xfb\x8fq\x19\xe3\xe4^?\xe8I\x80\x93W\x82\xa2\xaaq>/C?\xc2\xa6j\xc4\xcb\x9e\xb3\x8bM|\xf5\xbc\x88\x98\x91\x1dE\xdf\x19*#\xc7q\xf6\xf0\xf13\xc7v\xfcLJS\xf5\xb5b\xd1\xa2\xe5\re\xed\x1c\xaaW\x08\xca1\xb8J\xbed4$\xf0>\xd7\xd6_o\x87\x87\xec.\xc1U|Q\xa4^\xc7\x9c6\x99H\x90\xbe\xdc\xc4\xc9\xa3\xa4\xc33"\xc4\xf7\x12\x95\x87\xf8\x99\x16\x07\xe5\xb8\xbfq\xb1\x07\x1a\xccK\xb2Fjo\xd7\xbd\n\x8f\x82\xb0\xd33\x15Na\xbb\xca\xa6\xaa\x9e"\xa4\x85&\x851\xff\x00\xcd\xfaH\x84h?\x90\x83"\xf0\xc0\xd4F~8\xf8\xf8\x98\xe9~\x18\xb2\xa9d3\xb8\xd0\x1e\xc9\xa3\xc0\x96=35\x11\x19\x1a`,\xbe\xd3/\xa8\xcf\x0c>\x9f3\xf0\xfd\x85\x8dOJ\x1b\xc8d\xed\xa5\xadK\xe8\x82\x8c\rXoZ\xbcMG\xfc\x9e&$G\x08\xff\x00 \x8ek\xa1\xb5\x89\x97\xa2u\xe9\xf8&\xc8\x1c\x15\x1c\xab\xf6\x00\x00f\x16@\x00\x00\x00\x00\x00\xa5;\xe2\x9c\xe9\xac:\xee\x1d\xf1Nt\xd6\x1dw\x15\xb8\x0f_\xa7\xe1\xac1\xe6"\xd4\xb2;\xe2\x9c\xe9\xac:\xee\x1d\xf1Nt\xd6\x1dw\x15\xb8\x06\x9f\x86\xb0LE\xa9dw\xc59\xd3Xu\xdc;\xe2\x9c\xe9\xac:\xee+p\r?\r`\x98\x8bR\xc8\xef\x8as\xa6\xb0\xeb\xb8w\xc59\xd3Xu\xdcV\xe0\x1a~\x1a\xc11\x16\xa5\x91\xdf\x14\xe7Ma\xd7p\xef\x8as\xa6\xb0\xeb\xb8\xad\xc04\xfc5\x82b-K#\xbe)\xce\x9a\xc3\xae\xe1\xdf\x14\xe7Ma\xd7q[\x80i\xf8k\x04\xc4Z\x96G|S\x9d5\x87]\xc3\xbe)\xce\x9a\xc3\xae\xe2\xb7\x00\xd3\xf0\xd6\t\x88\xb5,\x8e\xf8\xa7:k\x0e\xbb\x87|S\x9d5\x87]\xc5n\x01\xa7\xe1\xac\x13\x11ji\x8c\xa1M\xe8R\xeeY6\x0c\xa1M\xe8R\xeeY6\x13`<\xa7:%\xcb\xdc\xd6\xc8\xda\x10\x99B\x9b\xd0\xa5\xdc\xb2l\x19B\x9b\xd0\xa5\xdc\xb2l&\xc09\xd1.^\xe3#hBe\noB\x97r\xc9\xb0e\noB\x97r\xc9\xb0\x9b\x00\xe7D\xb9{\x8c\x8d\xa1\t\x94)\xbd\n]\xcb&\xc1\x94)\xbd\n]\xcb&\xc2l\x03\x9d\x12\xe5\xee26\x84&P\xa6\xf4)w,\x9b\x06P\xa6\xf4)w,\x9b\t\xb0\x0etK\x97\xb8\xc8\xda\x10\x99B\x9b\xd0\xa5\xdc\xb2l\x19B\x9b\xd0\xa5\xdc\xb2l&\xc09\xd1.^\xe3#hBe\noB\x97r\xc9\xb0e\noB\x97r\xc9\xb0\x9b\x00\xe7D\xb9{\x8c\x8d\xa1\t\x94)\xbd\n]\xcb&\xc1\x94)\xbd\n]\xcb&\xc2l\x03\x9d\x12\xe5\xee26\x87\xff\xd9'
+2024-09-19 12:04:49,733 - INFO - 
 TLS session verification complete for 192.168.1.1
-2024-09-18 22:50:51,105 - INFO - Total packets verified: 3
-2024-09-18 22:50:51,105 - INFO - 
+2024-09-19 12:04:49,733 - INFO - Total packets verified: 3
+2024-09-19 12:04:49,733 - INFO - 
 --- Client 2 Session ---
-2024-09-18 22:50:51,121 - INFO - Keys and certificate successfully loaded for server: ../api/server.der
-2024-09-18 22:50:51,121 - INFO - Certificate subject: <Name(C=IL,ST=Jerusalem,L=Kohav Yaakov,O=Lev Academic Center,OU=IT Department,CN=Pasdaran.local,1.2.840.113549.1.9.1=myctf@example.com)>
-2024-09-18 22:50:51,121 - INFO - Certificate validity: 2024-09-15 09:07:15+00:00 to 2025-09-15 09:07:15+00:00
-2024-09-18 22:50:51,121 - INFO - Generated client_random: 66eb2f1b62388abf171a8573499c49e366a3518bd883adfa1a5573bff21982ca
-2024-09-18 22:50:51,121 - INFO - Client Hello sent from 192.168.1.2
-2024-09-18 22:50:51,121 - INFO - Generated server_random: 66eb2f1b425df6207edaa8ced7746c334d9af6bbcfd55e225082c32a63f2a126
-2024-09-18 22:50:51,121 - INFO - Generated session_id: 0246896c06aeb6d53dff64a7a88f8bb8c6c273f99e9733cb14305f53c86b4e4f
-2024-09-18 22:50:51,121 - INFO - Server certificate loaded. Subject: <Name(C=IL,ST=Jerusalem,L=Kohav Yaakov,O=Lev Academic Center,OU=IT Department,CN=Pasdaran.local,1.2.840.113549.1.9.1=myctf@example.com)>
-2024-09-18 22:50:51,121 - INFO - Server certificate public key: 21375138086037084389426530392990647308049292022233555915101869938133189925529364770349917472221924751849356561848925472179297312552921168546163403305437441869753840146778864320425508610451826135735401934333778541547085048566228430780843025077140891083922893721992857224624238155771647332188810959564263128498682157287085418231871576202444866500370894722567237911968881651638557068391829335183312655905850317806040253945834315321925487346537385783011407079020315286505509979165729232644441672558546873735734633992204994926791710188134685182348571805570203839036500204261869276055358017182801293646849442102288147771527
-2024-09-18 22:50:51,121 - INFO - Server certificate loaded. Subject: <Name(C=IL,ST=Jerusalem,L=Kohav Yaakov,O=Lev Academic Center,OU=IT Department,CN=Pasdaran.local,1.2.840.113549.1.9.1=myctf@example.com)>
-2024-09-18 22:50:51,121 - INFO - Server certificate public key: -----BEGIN PUBLIC KEY-----
+2024-09-19 12:04:49,749 - INFO - Keys and certificate successfully loaded for server: ../api/server.der
+2024-09-19 12:04:49,749 - INFO - Certificate subject: <Name(C=IL,ST=Jerusalem,L=Kohav Yaakov,O=Lev Academic Center,OU=IT Department,CN=Pasdaran.local,1.2.840.113549.1.9.1=myctf@example.com)>
+2024-09-19 12:04:49,749 - INFO - Certificate validity: 2024-09-15 09:07:15+00:00 to 2025-09-15 09:07:15+00:00
+2024-09-19 12:04:49,749 - INFO - Generated client_random: 66ebe9310a64d729e5c7da17cc2320faf339615984e10023e9a8a73b91107ea1
+2024-09-19 12:04:49,749 - INFO - Client Hello sent from 192.168.1.2
+2024-09-19 12:04:49,749 - INFO - Generated server_random: 66ebe931a75a388664c6e132b2541e77e4aadfcf7c3d42c8cae81b3ffec28196
+2024-09-19 12:04:49,749 - INFO - Generated session_id: 9b8af79622c117b6d8030a26c62a132b1a8b1742d4bb94af2fa202565b45973f
+2024-09-19 12:04:49,765 - INFO - Server certificate loaded. Subject: <Name(C=IL,ST=Jerusalem,L=Kohav Yaakov,O=Lev Academic Center,OU=IT Department,CN=Pasdaran.local,1.2.840.113549.1.9.1=myctf@example.com)>
+2024-09-19 12:04:49,765 - INFO - Server certificate public key: 21375138086037084389426530392990647308049292022233555915101869938133189925529364770349917472221924751849356561848925472179297312552921168546163403305437441869753840146778864320425508610451826135735401934333778541547085048566228430780843025077140891083922893721992857224624238155771647332188810959564263128498682157287085418231871576202444866500370894722567237911968881651638557068391829335183312655905850317806040253945834315321925487346537385783011407079020315286505509979165729232644441672558546873735734633992204994926791710188134685182348571805570203839036500204261869276055358017182801293646849442102288147771527
+2024-09-19 12:04:49,765 - INFO - Server certificate loaded. Subject: <Name(C=IL,ST=Jerusalem,L=Kohav Yaakov,O=Lev Academic Center,OU=IT Department,CN=Pasdaran.local,1.2.840.113549.1.9.1=myctf@example.com)>
+2024-09-19 12:04:49,765 - INFO - Server certificate public key: -----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqVLeoUqcSV33pzJ4GDy2
 UJPy4Lv3/FUlO8e/Jv5OvmNGQVICvTZejupnjnA3cq3KbwVf+tussfmGekV1i3qS
 NTkDu03L/sd4kld8cF44Q9/NPgW6RVsrLWHU3VKmu5BYfXcBn/SnZEM0s9d5DvWG
@@ -104,46 +104,46 @@ GnOHoDJe743sO7vUMbdTxWFvwFG9eOMgVykDXkK71Mh9rAlzi7hv7X1fdQVs5tNw
 hwIDAQAB
 -----END PUBLIC KEY-----
 
-2024-09-18 22:50:51,121 - INFO - Sending server certificate. Size: 1399 bytes
-2024-09-18 22:50:51,121 - INFO - Server Hello cipher: 60
-2024-09-18 22:50:51,121 - INFO - Server Hello version: 0x303
-2024-09-18 22:50:51,121 - INFO - Server Hello extensions: [<TLS_Ext_SignatureAlgorithms  sig_algs=[sha256+rsaepss] |>, <TLS_Ext_ExtendedMasterSecret  |>, <TLS_Ext_EncryptThenMAC  |>]
-2024-09-18 22:50:51,121 - INFO - Server selected cipher suite: 60
-2024-09-18 22:50:51,121 - INFO - Using SSL keylog file: ../api/sslkeylog_ctf.log
-2024-09-18 22:50:51,121 - INFO - Server Hello and Certificate sent to 192.168.1.2
-2024-09-18 22:50:51,121 - INFO - Client generated pre_master_secret: 0303fcbb70db93acc03e4de339d2b6b2dae6e2e2e6263e57af00ad678c3fe548984c6c206f3b43750d321c28a3bb4edc
-2024-09-18 22:50:51,121 - INFO - Encrypted pre_master_secret length: 256
-2024-09-18 22:50:51,121 - INFO - Client Key Exchange sent from 192.168.1.2
-2024-09-18 22:50:51,121 - INFO - Server decrypted pre_master_secret: 0303fcbb70db93acc03e4de339d2b6b2dae6e2e2e6263e57af00ad678c3fe548984c6c206f3b43750d321c28a3bb4edc
-2024-09-18 22:50:51,121 - INFO - Comparison successful
-2024-09-18 22:50:51,121 - INFO - Pre master secret encrypted matches.
-2024-09-18 22:50:51,137 - INFO - Client ChangeCipherSpec and Finished sent from 192.168.1.2
-2024-09-18 22:50:51,137 - INFO - Server decrypted pre_master_secret: 0303fcbb70db93acc03e4de339d2b6b2dae6e2e2e6263e57af00ad678c3fe548984c6c206f3b43750d321c28a3bb4edc
-2024-09-18 22:50:51,137 - INFO - Server Finished sent to 192.168.1.2
-2024-09-18 22:50:51,137 - INFO - Logged master secret to ../api/sslkeylog_ctf.log: CLIENT_RANDOM 66eb2f1b62388abf171a8573499c49e366a3518bd883adfa1a5573bff21982ca e86f5c755490079c917b93845d16bf2e54a7a32dac2d7955429d8067fce2e5f9f5a4c5735771da82a62325522f82b7b9
-2024-09-18 22:50:51,137 - INFO - Comparison failed
-2024-09-18 22:50:51,137 - INFO - Comparison successful
-2024-09-18 22:50:51,137 - INFO - Comparison successful
-2024-09-18 22:50:51,137 - INFO - Derived master_secret: e86f5c755490079c917b93845d16bf2e54a7a32dac2d7955429d8067fce2e5f9f5a4c5735771da82a62325522f82b7b9
-2024-09-18 22:50:51,137 - INFO - TLS Handshake completed successfully
-2024-09-18 22:50:51,152 - INFO - PCAP file '../api/output.pcap' saved successfully with 15 packets.
-2024-09-18 22:50:51,152 - INFO - Starting packet verification and logging...
-2024-09-18 22:50:51,152 - INFO - Packet 1: IP / TCP 192.168.1.1:12345 > 10.0.0.1:https PA / Raw
-2024-09-18 22:50:51,152 - INFO - Packet 2: IP / TCP 10.0.0.1:https > 192.168.1.1:12345 PA / Raw
-2024-09-18 22:50:51,152 - INFO - Packet 3: IP / TCP 192.168.1.1:12345 > 10.0.0.1:https PA / Raw
-2024-09-18 22:50:51,152 - INFO - Packet 4: IP / TCP 192.168.1.1:12345 > 10.0.0.1:https PA / Raw
-2024-09-18 22:50:51,152 - INFO - Packet 5: IP / TCP 10.0.0.1:https > 192.168.1.1:12345 PA / Raw
-2024-09-18 22:50:51,152 - INFO - Packet 6: IP / TCP 192.168.1.1:12345 > 10.0.0.1:https PA / Raw
-2024-09-18 22:50:51,152 - INFO - Packet 7: IP / TCP 10.0.0.1:https > 192.168.1.1:12345 PA / Raw
-2024-09-18 22:50:51,152 - INFO - Packet 8: IP / TCP 10.0.0.1:https > 192.168.1.1:12345 PA / Raw
-2024-09-18 22:50:51,152 - INFO - Packet 9: IP / TCP 192.168.1.2:12346 > 10.0.0.1:https PA / Raw
-2024-09-18 22:50:51,152 - INFO - Packet 10: IP / TCP 10.0.0.1:https > 192.168.1.2:12346 PA / Raw
-2024-09-18 22:50:51,152 - INFO - Packet 11: IP / TCP 192.168.1.2:12346 > 10.0.0.1:https PA / Raw
-2024-09-18 22:50:51,152 - INFO - Packet 12: IP / TCP 192.168.1.2:12346 > 10.0.0.1:https PA / Raw
-2024-09-18 22:50:51,152 - INFO - Packet 13: IP / TCP 10.0.0.1:https > 192.168.1.2:12346 PA / Raw
-2024-09-18 22:50:51,152 - INFO - Packet 14: IP / TCP 192.168.1.2:12346 > 10.0.0.1:https PA / Raw
-2024-09-18 22:50:51,152 - INFO - Packet 15: IP / TCP 10.0.0.1:https > 192.168.1.2:12346 PA / Raw
-2024-09-18 22:50:51,152 - INFO - Packet verification and logging completed.
-2024-09-18 22:50:51,152 - INFO - 
+2024-09-19 12:04:49,765 - INFO - Sending server certificate. Size: 1399 bytes
+2024-09-19 12:04:49,765 - INFO - Server Hello cipher: 60
+2024-09-19 12:04:49,765 - INFO - Server Hello version: 0x303
+2024-09-19 12:04:49,765 - INFO - Server Hello extensions: [<TLS_Ext_SignatureAlgorithms  sig_algs=[sha256+rsaepss] |>, <TLS_Ext_ExtendedMasterSecret  |>, <TLS_Ext_EncryptThenMAC  |>]
+2024-09-19 12:04:49,765 - INFO - Server selected cipher suite: 60
+2024-09-19 12:04:49,765 - INFO - Using SSL keylog file: ../api/sslkeylog_ctf.log
+2024-09-19 12:04:49,765 - INFO - Server Hello and Certificate sent to 192.168.1.2
+2024-09-19 12:04:49,765 - INFO - Client generated pre_master_secret: 0303d1e81c7be703b7f9ef35e8fc51f9c46f463bfe931fa447ab1a3cb56ca264b4c40b0b042146fdff8aff58825b56f8
+2024-09-19 12:04:49,765 - INFO - Encrypted pre_master_secret length: 256
+2024-09-19 12:04:49,765 - INFO - Client Key Exchange sent from 192.168.1.2
+2024-09-19 12:04:49,765 - INFO - Server decrypted pre_master_secret: 0303d1e81c7be703b7f9ef35e8fc51f9c46f463bfe931fa447ab1a3cb56ca264b4c40b0b042146fdff8aff58825b56f8
+2024-09-19 12:04:49,765 - INFO - Comparison successful
+2024-09-19 12:04:49,765 - INFO - Pre master secret encrypted matches.
+2024-09-19 12:04:49,765 - INFO - Client ChangeCipherSpec and Finished sent from 192.168.1.2
+2024-09-19 12:04:49,765 - INFO - Server decrypted pre_master_secret: 0303d1e81c7be703b7f9ef35e8fc51f9c46f463bfe931fa447ab1a3cb56ca264b4c40b0b042146fdff8aff58825b56f8
+2024-09-19 12:04:49,780 - INFO - Server Finished sent to 192.168.1.2
+2024-09-19 12:04:49,780 - INFO - Logged master secret to ../api/sslkeylog_ctf.log: CLIENT_RANDOM 66ebe9310a64d729e5c7da17cc2320faf339615984e10023e9a8a73b91107ea1 875fdd0870ce13815bd1d262a038aecc00398b3480e8ce3e68421b08da9da18c70f85b18486495b80d7a380677015f89
+2024-09-19 12:04:49,780 - INFO - Comparison failed
+2024-09-19 12:04:49,780 - INFO - Comparison successful
+2024-09-19 12:04:49,780 - INFO - Comparison successful
+2024-09-19 12:04:49,780 - INFO - Derived master_secret: 875fdd0870ce13815bd1d262a038aecc00398b3480e8ce3e68421b08da9da18c70f85b18486495b80d7a380677015f89
+2024-09-19 12:04:49,780 - INFO - TLS Handshake completed successfully
+2024-09-19 12:04:49,796 - INFO - PCAP file '../api/output.pcap' saved successfully with 15 packets.
+2024-09-19 12:04:49,796 - INFO - Starting packet verification and logging...
+2024-09-19 12:04:49,796 - INFO - Packet 1: IP / TCP 192.168.1.1:12345 > 10.0.0.1:https PA / Raw
+2024-09-19 12:04:49,796 - INFO - Packet 2: IP / TCP 10.0.0.1:https > 192.168.1.1:12345 PA / Raw
+2024-09-19 12:04:49,796 - INFO - Packet 3: IP / TCP 192.168.1.1:12345 > 10.0.0.1:https PA / Raw
+2024-09-19 12:04:49,796 - INFO - Packet 4: IP / TCP 192.168.1.1:12345 > 10.0.0.1:https PA / Raw
+2024-09-19 12:04:49,796 - INFO - Packet 5: IP / TCP 10.0.0.1:https > 192.168.1.1:12345 PA / Raw
+2024-09-19 12:04:49,796 - INFO - Packet 6: IP / TCP 192.168.1.1:12345 > 10.0.0.1:https PA / Raw
+2024-09-19 12:04:49,796 - INFO - Packet 7: IP / TCP 10.0.0.1:https > 192.168.1.1:12345 PA / Raw
+2024-09-19 12:04:49,796 - INFO - Packet 8: IP / TCP 10.0.0.1:https > 192.168.1.1:12345 PA / Raw
+2024-09-19 12:04:49,796 - INFO - Packet 9: IP / TCP 192.168.1.2:12346 > 10.0.0.1:https PA / Raw
+2024-09-19 12:04:49,796 - INFO - Packet 10: IP / TCP 10.0.0.1:https > 192.168.1.2:12346 PA / Raw
+2024-09-19 12:04:49,796 - INFO - Packet 11: IP / TCP 192.168.1.2:12346 > 10.0.0.1:https PA / Raw
+2024-09-19 12:04:49,796 - INFO - Packet 12: IP / TCP 192.168.1.2:12346 > 10.0.0.1:https PA / Raw
+2024-09-19 12:04:49,796 - INFO - Packet 13: IP / TCP 10.0.0.1:https > 192.168.1.2:12346 PA / Raw
+2024-09-19 12:04:49,796 - INFO - Packet 14: IP / TCP 192.168.1.2:12346 > 10.0.0.1:https PA / Raw
+2024-09-19 12:04:49,796 - INFO - Packet 15: IP / TCP 10.0.0.1:https > 192.168.1.2:12346 PA / Raw
+2024-09-19 12:04:49,796 - INFO - Packet verification and logging completed.
+2024-09-19 12:04:49,796 - INFO - 
 TLS Session Verification Summary:
-2024-09-18 22:50:51,152 - INFO - Client 1: 3 packets verified
+2024-09-19 12:04:49,796 - INFO - Client 1: 3 packets verified
