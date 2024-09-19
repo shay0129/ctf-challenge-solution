@@ -371,7 +371,10 @@ def send_application_data(self, data, is_request):
 ##### issue
 An issue is noted with SSL keylog decryption in Wireshark, and potential reasons are explored.
 
-- Checking a "real pcap" decryption procces and compare with my pcap.
+- I looked on the Wireshark Open Source for understand how they are implement the decryption.
+This trying worked a little bit......
+
+- Checking a "real pcap" decryption procces and compare with my pcap, with TShark commands.
 ```bash
 tshark -r <pcap_name.pcap> \
     -o "tls.keylog_file:<sslkeylog_name.log>" \
@@ -386,7 +389,7 @@ The issue is not with: sslkeylog details, pre master secret, ............
 לא אמורה להיות בעיה כאן כי...
 
 - I though maby the issue is the fact I used Self Signed Certificate and no CA sigend for server, so OS not בוטחת in that. But this thing only for the 
-- ....
+- .
 - .
 - .
 
@@ -397,28 +400,117 @@ The issue is not with: sslkeylog details, pre master secret, ............
 
 #### Server File
 ```python
+def main():
+    # Set up SSL context
+    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    context.load_cert_chain(certfile="server.crt", keyfile="server.key")
+    context.verify_mode = ssl.CERT_OPTIONAL  # Allow optional client cert
 
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind((protocol.SERVER_IP, protocol.SERVER_PORT))
+    server_socket.listen(5)
+    server_socket.settimeout(5)  # Set timeout for 5 seconds
+
+    print("Server is up and running, waiting for a client...")
+
+    # Start a thread to print the encryption key if no connection is made in 5 seconds
+    if not print_encryption_key():
+        server_socket.close()
+        return
+
+    try:
+        client_socket, client_address = server_socket.accept()
+        print(f"Client connected from {client_address}")
+
+        ssl_socket = context.wrap_socket(client_socket, server_side=True)
+
+        # Check for client certificate
+        cert = ssl_socket.getpeercert()
+        if not cert:
+            print("No client certificate provided.")
+            response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\n\r\n"
+            response += "Hint: Use a self-signed certificate (Country: IL, CN: Pasdaran.local) to access the resource."
+            ssl_socket.send(response.encode())
+            ssl_socket.close()
+            return
+
+        # Handle client request
+        data = ssl_socket.recv(protocol.MAX_MSG_LENGTH).decode()
+        print(f"Client sent: {data}")
+        
+        response = handle_client_request(ssl_socket)
+        ssl_socket.send(response.encode())
+
+        ssl_socket.close()
+    except socket.timeout:
+        print("No client connected within 5 seconds. Server is stopping.")
+    finally:
+        server_socket.close()
 ```
 
 #### Client no-cert File
 ```python
+def main():
+    # Initialize the socket
+    my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    
+    # Connect to the server
+    print(f"Connecting to {'127.0.0.1'}:{protocol.SERVER_PORT}")
+    my_socket.connect(('127.0.0.1', protocol.SERVER_PORT))
+    
+    # Send a "Hello" message to the server
+    message = "Hello"
+    my_socket.send(message.encode())
+    print(f"Sent: {message}")
 
+    # Receive a response from the server
+    response = my_socket.recv(1024).decode()
+    print(f"Received: {response}")
+    
+    # Close the socket
+    my_socket.close()
 ```
 
 #### Client cert File
 ```python
+def client():
+    context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+    context.load_cert_chain(certfile="client.crt", keyfile="client.key")
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
 
+    with socket.create_connection(('localhost', 443)) as sock:
+        with context.wrap_socket(sock, server_hostname='localhost') as secure_sock:
+            print(f"Connected to {secure_sock.getpeername()}")
+            secure_sock.send(b"GET /resource HTTP/1.1\r\nHost: localhost\r\n\r\n")
+            
+            response = b""
+            while True:
+                chunk = secure_sock.recv(4096)
+                if not chunk:
+                    break
+                response += chunk
+            
+            print(f"Received response of {len(response)} bytes")
 ```
 
 #### Protocol File
 ```python
-
+MAX_MSG_LENGTH = 1024
+SERVER_PORT = 8110
+SERVER_IP = "0.0.0.0"
+ENCRYPTION_KEY = "RandomEncryptionKey123!@#"
 ```
-## Analyzing
+## Analyzing Protocol Tools
 
 used:
 ```bash
-tshark -r <pcap_file> -o "tls.keylog_file:<path_to_sslkeylog_file>" -d "tcp.port==<port>,tls" -Y "tls.app_data" -T fields -e tls.app_data
+tshark -r <pcap_file> \
+    -o"tls.keylog_file:<path_to_sslkeylog_file>" \
+    -d "tcp.port==<port>,tls" \
+    -Y "tls.app_data" \
+    -T fields \
+    -e tls.app_data
 ```
 tshark -r new_output.pcap \
     -o "tls.keylog_file:sslkeylog_sniffEx.log" \
@@ -427,13 +519,14 @@ tshark -r new_output.pcap \
     -e tls.app_data
 
 
-
+```bash
 tshark -r new_output.pcap \
     -o "tls.keylog_file:sslkeylog_sniffEx.log" \
     -o "tls.debug_file:tls_debug.txt" \
     -V
+```
 
-
+```bash
 tshark -r output.pcap \
      -o "tls.keylog_file:sslkeylog_ctf.log" \
      -d "tcp.port==443,tls" \
@@ -444,7 +537,7 @@ tshark -r output.pcap \
      -e tls.record.content_type \
      -e tls.handshake.type \
      -e tls.app_data
-
+```
 ## Known Limitations
 
 - **No Padding Support**: Ensure that your data length is a multiple of 16 bytes, as the algorithm processes data in 16-byte blocks. Padding is not supported.
