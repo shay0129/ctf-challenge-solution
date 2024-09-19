@@ -1,6 +1,6 @@
 # my CTF challange
 
-This repository provides a simple implementation of AES-128-CBC encryption and decryption in C using the `AES_128_CBC.h` header file. AES-128-CBC is a widely used symmetric encryption algorithm that operates on fixed-size blocks of data.
+This repository provides a simple implementation of ...
 ![alt text](pcap-image.png)
 ## Table of Contents
 
@@ -51,6 +51,7 @@ successfully!
 5. HTTP protocol: understanding of the protocol and ability to analyze bugs in it.
 6. Reversing: using tools like IDA to analyze and understand binary code.//embedding an exe in a pdf file.
 7. Creating the PCAP using the SCAPY library of PYTHON
+8. כלי ניתוח פרוטוקולים: tshark, openssl בסביבת wsl.
 
 ## Characterization
 
@@ -369,14 +370,14 @@ def send_application_data(self, data, is_request):
 ##### issue
 For now, not succeded to decrypt the pcap with sslkeylog and wireshark.
 After analyse that issue, my foundation:
-- After checking a "real pcap" decryption procces with those coomands, I compare with my pcap.
-The issue is not with: sslkeylog details, pre master secret, ............
+- Checking a "real pcap" decryption procces and compare with my pcap.
 ```bash
-tshark -r new_output.pcap \
-    -o "tls.keylog_file:sslkeylog_sniffEx.log" \
-    -o "tls.debug_file:tls_debug2.txt" \
+tshark -r <pcap_name.pcap> \
+    -o "tls.keylog_file:<sslkeylog_name.log>" \
+    -o "tls.debug_file:<tls_debug_name.txt>" \
     -V
 ```
+The issue is not with: sslkeylog details, pre master secret, ............
 מצאתי שתהליך הפענוח הוא כזה:
 תחילה, נבדק XXX
 אח"כ XXX
