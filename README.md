@@ -50,44 +50,44 @@ The challenge covers various skills including:
 
 1. Revealing the Files
 
-- Start with mission.pdf
-- Extract hidden files:
-    - server.exe
-    - Corrupted client.exe
-- Use steganography techniques
+    - Start with mission.pdf
+    - Extract hidden files:
+        - server.exe
+        - Corrupted client.exe
+    - Use steganography techniques
 
 2. Client Fix
-- Run server.exe to get encryption key (random character sequence)
-- Write Python script to decrypt client.exe
-- Make client.exe executable
+    - Run server.exe to get encryption key (random character sequence)
+    - Write Python script to decrypt client.exe
+    - Make client.exe executable
 
 3. Communication Analysis
-- Run server.exe and client.exe simultaneously
-- Analyze capture.pcapng from mission.pdf
-- Discover server's requirement: send resource only to clients with Certificate during TLS Handshake
+    - Run server.exe and client.exe simultaneously
+    - Analyze capture.pcapng from mission.pdf
+    - Discover server's requirement: send resource only to clients with Certificate during TLS Handshake
 
 4.  Creating Another Client
-- Create client2.exe
-- Must connect concurrently with original client
-- Ensure client2.exe is unique to avoid server treating it as duplicate
-- Difference: client1 doesn't load certificate, client2 does
+    - Create client2.exe
+    - Must connect concurrently with original client
+    - Ensure client2.exe is unique to avoid server treating it as duplicate
+    - Difference: client1 doesn't load certificate, client2 does
 
 5. Self-Signed Certificate
-- Generate self-signed certificate without CA
-- Integrate certificate into client2 code
-- Ensure server recognizes certificate during TLS handshake
-- Possible localhost domain setup
-- Be prepared for server expecting DER format instead of CRT
+    - Generate self-signed certificate without CA
+    - Integrate certificate into client2 code
+    - Ensure server recognizes certificate during TLS handshake
+    - Possible localhost domain setup
+    - Be prepared for server expecting DER format instead of CRT
 
 6. CRS File Verification
-- After loading certificate, client2 must also load CRS file
-- Verifies proper certificate creation steps
-- Prevents bypass using Python script
+    - After loading certificate, client2 must also load CRS file
+    - Verifies proper certificate creation steps
+    - Prevents bypass using Python script
 
 7. Capturing the Resource
-- client2 receives resource.png from server
-- Image contains flag in plain sight
-- Participants submit flag to complete challenge
+    - client2 receives resource.png from server
+    - Image contains flag in plain sight
+    - Participants submit flag to complete challenge
 
 ## Usage
 
@@ -449,53 +449,121 @@ The issue is not with: sslkeylog details, pre master secret, ............
 ```
 
 #### Server File
+Explain:
+    1. Turn client certificate: If client connected without turn a certificate (as client1.exe), so tell him to use self signed cert.
+    2. Turn CSR: Additionly, added another verify, for be sure the client used a real cert he created by own, and not used a python script for that.
 ```python
-def main():
-    # Set up SSL context
-    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+def handle_client_request(ssl_socket):
+    try:
+        # Check for client certificate
+        cert = ssl_socket.getpeercert(binary_form=True)
+        if not cert:
+            print("No client certificate provided")
+            response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\n\r\n"
+            response += "Hint: Use a self-signed certificate (Country: IL, CN: Pasdaran.local) to access the resource."
+            ssl_socket.sendall(response.encode())
+            return False
+        
+        print("Client certificate received.")
+        
+        # Request CSR file
+        response = "HTTP/1.1 100 Continue\r\nContent-Type: text/plain\r\n\r\n"
+        response += "Please provide your CSR file for verification."
+        ssl_socket.sendall(response.encode())
+        print("Requested CSR file from client")
+        
+        # Wait for CSR file
+        csr_data = b""
+        while True:
+            chunk = ssl_socket.recv(4096)
+            if not chunk:
+                break
+            csr_data += chunk
+            if b"-----END CERTIFICATE REQUEST-----" in csr_data:
+                break
+        
+        csr_data = csr_data.decode()
+        print(f"Received CSR data (length: {len(csr_data)} bytes)")
+        
+        if verify_client_cert(cert, csr_data):
+            response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n"
+            response += "FLAG{This_Is_Your_Secret_Flag}"
+        else:
+            response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\n\r\n"
+            response += "Invalid certificate or CSR. Access denied."
+        
+        print(f"Sending response: {response}")
+        ssl_socket.sendall(response.encode())
+        print("Response sent successfully")
+        return True
+    except Exception as e:
+        print(f"Error handling client: {e}")
+        return False
+```
+Explain:
+
+```python
+def server():
+    global running
+    context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+    context.set_ciphers('AES128-SHA256')
     context.load_cert_chain(certfile="server.crt", keyfile="server.key")
     context.verify_mode = ssl.CERT_OPTIONAL  # Allow optional client cert
+    context.check_hostname = False
+    context.verify_flags = ssl.VERIFY_DEFAULT | ssl.VERIFY_X509_TRUSTED_FIRST
+    context.load_verify_locations(cafile="client.crt")  # Trust the client's self-signed cert
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((protocol.SERVER_IP, protocol.SERVER_PORT))
     server_socket.listen(5)
-    server_socket.settimeout(5)  # Set timeout for 5 seconds
+    server_socket.setblocking(False)  # Set socket to non-blocking mode
 
-    print("Server is up and running, waiting for a client...")
+    print(f"Server is up and running, waiting for a client on port {protocol.SERVER_PORT}...")
+    print("Press Ctrl+C to stop the server.")
 
-    # Start a thread to print the encryption key if no connection is made in 5 seconds
-    if not print_encryption_key():
-        server_socket.close()
-        return
+    start_time = time.time()
+    key_printed = False
+
+    # Set up the signal handler
+    signal.signal(signal.SIGINT, signal_handler)
 
     try:
-        client_socket, client_address = server_socket.accept()
-        print(f"Client connected from {client_address}")
+        while running:
+            # Use select to wait for a connection with a short timeout
+            ready, _, _ = select.select([server_socket], [], [], 0.1)
+            
+            if ready:
+                client_socket, client_address = server_socket.accept()
+                print(f"Client connected from {client_address}")
 
-        ssl_socket = context.wrap_socket(client_socket, server_side=True)
-
-        # Check for client certificate
-        cert = ssl_socket.getpeercert()
-        if not cert:
-            print("No client certificate provided.")
-            response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\n\r\n"
-            response += "Hint: Use a self-signed certificate (Country: IL, CN: Pasdaran.local) to access the resource."
-            ssl_socket.send(response.encode())
-            ssl_socket.close()
-            return
-
-        # Handle client request
-        data = ssl_socket.recv(protocol.MAX_MSG_LENGTH).decode()
-        print(f"Client sent: {data}")
-        
-        response = handle_client_request(ssl_socket)
-        ssl_socket.send(response.encode())
-
-        ssl_socket.close()
-    except socket.timeout:
-        print("No client connected within 5 seconds. Server is stopping.")
+                try:
+                    ssl_socket = context.wrap_socket(client_socket, server_side=True)
+                    print("SSL handshake successful")
+                    print(f"Using cipher: {ssl_socket.cipher()}")
+                    print(f"SSL version: {ssl_socket.version()}")
+                    
+                    if handle_client_request(ssl_socket):
+                        print("Client request handled successfully")
+                    else:
+                        print("Failed to handle client request")
+                except ssl.SSLError as e:
+                    print(f"SSL Error: {e}")
+                except Exception as e:
+                    print(f"Unexpected error: {e}")
+                finally:
+                    ssl_socket.close()
+                    print("Connection closed")
+            else:
+                # No connection within the timeout period
+                if not key_printed and time.time() - start_time > 5:
+                    print_encryption_key()
+                    key_printed = True
+                print("Waiting for a new connection...", end='\r')
+    
     finally:
+        print("\nClosing server socket...")
         server_socket.close()
+        print("Server has been shut down.")
 ```
 
 #### Client no-cert File
@@ -590,6 +658,34 @@ tshark -r output.pcap \
 ```
 ## Known Limitations
 
+
+Create Signed Self Certificate:
+
+```bash
+openssl req -x509 \
+    -newkey rsa:4096 \
+    -keyout server.key \
+    -out server.crt \
+    -days 365 \
+    -nodes \
+    -subj "/C=IL/CN=localhost"
+```
+- req -x509:
+    Creates a CSR (Certificate Signing Request) and a self-signed certificate.
+- newkey rsa:4096:
+    Generates a new RSA private key with a 4096-bit length.
+- keyout server.key:
+    Saves the private key to server.key.
+- out server.crt:
+    Saves the self-signed certificate to server.crt.
+- days 365:
+    Sets the certificate to be valid for 365 days.
+- nodes:
+    Prevents encryption of the private key with a password.
+- subj "/C=IL/CN=localhost":
+    Specifies the certificate subject;
+        where C=IL (Country: Israel)
+        CN=localhost (Common Name: localhost).
 - **No Padding Support**: Ensure that your data length is a multiple of 16 bytes, as the algorithm processes data in 16-byte blocks. Padding is not supported.
 
 ## Contributing

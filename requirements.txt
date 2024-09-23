@@ -3,3 +3,4 @@ cryptography -v 3.4.6
 sslkeylog
 scapy==2.4.5
 
+nuitka
