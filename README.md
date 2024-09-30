@@ -39,7 +39,7 @@ The player's goal is to compromise an Iranian server and extract the encryption 
 The challenge covers various skills including:
 1. Wireshark: Network traffic analysis
 2. Python scripting: PCAP Creation with Scapy, Socket programming.
-3. Operating System knowledge: PE format understanding
+3. Operating System knowledge: PE format and forensic analyzing
 4. Cryptography: Encryption keys and file decryption
 5. HTTP protocol: Analysis and bug identification
 6. Reverse Engineering: Embedding exe in pdf.
