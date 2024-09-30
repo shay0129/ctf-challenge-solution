@@ -660,32 +660,43 @@ tshark -r output.pcap \
 
 
 Create Signed Self Certificate:
-
+create private key
 ```bash
-openssl req -x509 \
-    -newkey rsa:4096 \
-    -keyout server.key \
-    -out server.crt \
-    -days 365 \
-    -nodes \
-    -subj "/C=IL/CN=localhost"
+openssl genpkey \
+-algorithm RSA \
+-out server.key \
+-pkeyopt rsa_keygen_bits:2048
 ```
-- req -x509:
-    Creates a CSR (Certificate Signing Request) and a self-signed certificate.
-- newkey rsa:4096:
-    Generates a new RSA private key with a 4096-bit length.
-- keyout server.key:
-    Saves the private key to server.key.
-- out server.crt:
-    Saves the self-signed certificate to server.crt.
-- days 365:
-    Sets the certificate to be valid for 365 days.
-- nodes:
-    Prevents encryption of the private key with a password.
-- subj "/C=IL/CN=localhost":
-    Specifies the certificate subject;
-        where C=IL (Country: Israel)
-        CN=localhost (Common Name: localhost).
+create csr:
+```bash
+openssl req \
+-new -key server.key \
+-out server.csr \
+-subj "/C=IR/ST=xxx/L=xxx/O=xxx/OU=xxx/CN=xxx"
+```
+חתימה ע"י OpenSSL
+```bash
+openssl x509 \
+-req -days 365 \
+-in server.csr \
+-signkey server.key \
+-out server.crt
+```
+המרה לder
+```bash
+openssl x509 \
+-req -days 365 \
+-in server.csr \
+-signkey server.key \
+-out server.crt
+```
+extrach public key:
+```bash
+openssl rsa \
+-in server.key \
+-pubout \
+-out server.pub
+```
 - **No Padding Support**: Ensure that your data length is a multiple of 16 bytes, as the algorithm processes data in 16-byte blocks. Padding is not supported.
 
 ## Contributing

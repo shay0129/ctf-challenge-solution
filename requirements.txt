@@ -2,5 +2,16 @@
 cryptography -v 3.4.6
 sslkeylog
 scapy==2.4.5
-
 nuitka
+
+socket
+ssl
+time
+select
+signal
+logging
+os
+datetime
+hmac
+base64
+secrets
