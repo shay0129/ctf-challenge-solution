@@ -706,3 +706,29 @@ Feel free to contribute to the project by opening issues or pull requests.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+
+## הנחיות למשתתף (ליצירת תעודת לקוח)
+
+1. יצירת מפתח פרטי:
+   ```
+   openssl genpkey -algorithm RSA -out client.key
+   ```
+
+2. יצירת בקשת חתימה (CSR):
+   ```
+   openssl req -new -key client.key -out client.csr -subj "/C=IR/CN=Pasdaran.local"
+   ```
+
+3. חתימה עצמית על התעודה:
+   ```
+   openssl x509 -req -days 365 -in client.csr -signkey client.key -out client.crt
+   ```
+
+4. שימוש בתעודה בקוד הלקוח:
+   ```python
+   context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+   context.load_cert_chain(certfile="client.crt", keyfile="client.key")
+   context.check_hostname = False
+   context.verify_mode = ssl.CERT_NONE  # אל תאמת את תעודת השרת
+   ```
