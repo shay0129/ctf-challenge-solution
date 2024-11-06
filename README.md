@@ -709,26 +709,49 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 
 ## הנחיות למשתתף (ליצירת תעודת לקוח)
+הנה המדריך למערכת האישורים:
 
-1. יצירת מפתח פרטי:
-   ```
-   openssl genpkey -algorithm RSA -out client.key
-   ```
+1. הכנת ה-CA:
+```bash
+# יצירת מפתח CA
+openssl genrsa -out guards.key 2048
 
-2. יצירת בקשת חתימה (CSR):
-   ```
-   openssl req -new -key client.key -out client.csr -subj "/C=IR/CN=Pasdaran.local"
-   ```
+# יצירת תעודת CA
+openssl req -x509 -new -nodes -key guards.key -sha256 -days 3650 -out guards.crt \
+-subj "/CN=CTF CA/C=IL"
+```
 
-3. חתימה עצמית על התעודה:
-   ```
-   openssl x509 -req -days 365 -in client.csr -signkey client.key -out client.crt
-   ```
+2. קוד השרת יטען את ה-CA:
+```python
+context.load_verify_locations(cafile="guards.crt")
+```
 
-4. שימוש בתעודה בקוד הלקוח:
-   ```python
-   context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-   context.load_cert_chain(certfile="client.crt", keyfile="client.key")
-   context.check_hostname = False
-   context.verify_mode = ssl.CERT_NONE  # אל תאמת את תעודת השרת
-   ```
+3. הוראות למשתתפים:
+```bash
+# יצירת מפתח פרטי
+openssl genrsa -out client.key 2048
+
+# יצירת בקשת חתימה (CSR)
+openssl req -new -key client.key -out client.csr \
+-subj "/CN=Pasdaran.local/C=IL"
+
+# חתימת התעודה עם ה-CA
+openssl x509 -req -in client.csr -CA guards.crt -CAkey guards.key \
+-CAcreateserial -out client.crt -days 365
+```
+
+כך המשתתפים יוכלו ליצור תעודות חתומות על ידי ה-CA שלך.
+
+סדר הפעולות:
+
+לקוח שולח client.crt לשרת
+שרת בודק אם התעודה חתומה על ידי ca.crt שהוא מכיר
+אם כן, השרת בודק את התכונות של התעודה ב-verify_client_cert
+
+
+# Install pyinstaller:
+pip install pyinstaller
+
+# Create EXEs:
+pyinstaller --onefile server.py
+pyinstaller --onefile basic_client.py
