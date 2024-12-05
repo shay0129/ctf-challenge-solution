@@ -1,10 +1,10 @@
-# my CTF - BackGround
+# CTF Challenge: TLS Vulnerable Server and Client Analysis
 
-This repository provides a simple implementation of a vulnerable server and client that communicate over TLS.
-
+## **Introduction**
+This repository contains a Capture The Flag (CTF) challenge that simulates vulnerabilities in TLS communication. Participants will analyze traffic, fix clients, and create secure communications using cryptography, reverse engineering, and network analysis tools.
 ![Diagram](image-1.png)
-## Table of Contents
 
+## Table of Contents
 - [Challenge Description](#challenge-description)
 - [Subjects](#subjects)
 - [Challenge Steps](#challenge-steps)
@@ -26,6 +26,7 @@ This repository provides a simple implementation of a vulnerable server and clie
         - [Client cert File](#client-cert-file)
     - [External Services Overview](#external-services-overview)
         - [PE stole](#pe-stole)
+    [External Tools](#external-tools)
 - [Known Limitations](#known-limitations)
 - [Contributing](#contributing)
 - [License](#license)
@@ -36,59 +37,84 @@ The challenge is themed around the Ritchie Boys, a historical group of German-bo
 In the context of the challenge, the Ritchie Boys Force is revived in 2025 to combat Iran's Islamic Revolutionary Guard Corps.
 The player's goal is to compromise an Iranian server and extract the encryption key used for the organization's radio communications.
 
+Here's the improved version of the **Subjects** section:
+
+---
+
 ## Subjects
-The challenge covers various skills including:
-1. Wireshark: Network traffic analysis
-2. Python scripting: PCAP Creation with Scapy, Socket programming.
-3. Operating System knowledge: PE format and forensic analyzing
-4. Cryptography: Encryption keys and file decryption
-5. HTTP protocol: Analysis and bug identification
-6. Reverse Engineering: Embedding exe in pdf.
-7. PCAP creation with Scapy.
-8. Protocol analysis tools: TShark and OpenSSL in WSL environment
+This challenge develops a broad range of technical skills, including:
+
+1. **Network Traffic Analysis**:
+   - Using Wireshark to analyze captured network packets.
+   
+2. **Python Scripting**:
+   - Creating PCAP files with Scapy.
+   - Implementing socket programming for communication emulation.
+
+3. **Operating System Forensics**:
+   - Analyzing PE file formats.
+   - Applying forensic techniques for hidden data extraction.
+
+4. **Cryptography**:
+   - Understanding encryption key generation and usage.
+   - Decrypting files and securing communication.
+
+5. **HTTP Protocol Analysis**:
+   - Identifying and exploiting bugs in HTTP communications.
+
+6. **Reverse Engineering**:
+   - Extracting and embedding executable files within PDFs.
+
+7. **PCAP File Creation**:
+   - Simulating network interactions and capturing them for analysis with Scapy.
+
+8. **Protocol Analysis Tools**:
+   - Leveraging TShark for deeper protocol inspection.
+   - Using OpenSSL for TLS/SSL operations in a WSL environment.
+
+---
 
 ## Challenge Steps
 
-1. Revealing the Files
+1. **File Extraction**  
+   - Begin with `mission.pdf`.  
+   - Extract the hidden files using steganography techniques:  
+     - `server.exe`  
+     - Corrupted `client.exe`.
 
-    - Start with mission.pdf
-    - Extract hidden files:
-        - server.exe
-        - Corrupted client.exe
-    - Use steganography techniques
+2. **Fixing the Client**  
+   - Run `server.exe` to retrieve the encryption key (a random character sequence).  
+   - Develop a Python script to decrypt `client.exe`.  
+   - Repair and make `client.exe` executable.
 
-2. Client Fix
-    - Run server.exe to get encryption key (random character sequence)
-    - Write Python script to decrypt client.exe
-    - Make client.exe executable
+3. **Communication Analysis**  
+   - Execute `server.exe` and `client.exe` simultaneously.  
+   - Examine `capture.pcapng` extracted from `mission.pdf`.  
+   - Identify the server's behavior: only clients with a valid certificate during the TLS Handshake can access the resource.
 
-3. Communication Analysis
-    - Run server.exe and client.exe simultaneously
-    - Analyze capture.pcapng from mission.pdf
-    - Discover server's requirement: send resource only to clients with Certificate during TLS Handshake
+4. **Creating a Second Client**  
+   - Develop `client2.exe` with unique attributes to avoid duplication issues.  
+   - Ensure `client2.exe` loads a certificate, unlike `client1`.  
+   - Enable both clients to connect concurrently without conflicts.
 
-4.  Creating Another Client
-    - Create client2.exe
-    - Must connect concurrently with original client
-    - Ensure client2.exe is unique to avoid server treating it as duplicate
-    - Difference: client1 doesn't load certificate, client2 does
+5. **Generating a Self-Signed Certificate**  
+   - Create a self-signed certificate without relying on a Certificate Authority (CA).  
+   - Embed the certificate into `client2`'s code.  
+   - Confirm the server recognizes the certificate during the TLS Handshake.  
+   - Optionally set up a localhost domain for testing.  
+   - Prepare for the server’s potential requirement of DER-formatted certificates instead of CRT.
 
-5. Self-Signed Certificate
-    - Generate self-signed certificate without CA
-    - Integrate certificate into client2 code
-    - Ensure server recognizes certificate during TLS handshake
-    - Possible localhost domain setup
-    - Be prepared for server expecting DER format instead of CRT
+6. **Certificate Request Signing (CRS) File Verification**  
+   - Load the CRS file into `client2` post-certificate loading.  
+   - Validate proper certificate creation steps to ensure integrity.  
+   - Block bypass attempts using scripts for fake certificates.
 
-6. CRS File Verification
-    - After loading certificate, client2 must also load CRS file
-    - Verifies proper certificate creation steps
-    - Prevents bypass using Python script
+7. **Retrieving the Flag**  
+   - Use `client2` to receive `resource.png` from the server.  
+   - Identify the embedded flag in the image.  
+   - Submit the flag to successfully complete the challenge.
 
-7. Capturing the Resource
-    - client2 receives resource.png from server
-    - Image contains flag in plain sight
-    - Participants submit flag to complete challenge
+---
 
 ## Usage
 
@@ -691,7 +717,7 @@ Challenge:
 Can you find the encryption key hidden in the magic number? 
 It's not just 0xDEADBEEF - there's more to it!
 
-## Analyzing Protocol Tools
+## External Tools
 
 used:
 ```bash
