@@ -5,28 +5,27 @@ This repository provides a simple implementation of a vulnerable server and clie
 ![Diagram](image-1.png)
 ## Table of Contents
 
-- [Frame story](#frame-story)
+- [Challenge Description](#challenge-description)
 - [Subjects](#subjects)
 - [Challenge Steps](#challenge-steps)
 - [Usage](#usage)
-  - [PCAP Creation Overview](#pcap-creation)
-    - [TLS Handshake Steps](#tls-handshake-steps)
-    - [Client Hello](#client-hello)
-    - [Server Hello](#server-hello)
-    - [Client Key Exchange](#client-key-exchange)
-    - [Calculate Master Secret](#calculate-master-secret)
-    - [Client Change Cipher Spec](#client-change-cipher-spec)
-    - [Server Change Cipher Spec](#server-change-cipher-spec)
-    - [Create SSLKeyLog File](#create-sslkeylog-file)
-    - [Application Data Encryption](#application-data-encryption)
-      - [issue](#issue)
-  - [Create Communication](#create-communication)
-    - [Server File](#server-file)
-    - [Client no-cert File](#client-no-cert-file)
-    - [Client cert File](#client-cert-file)
-    - [Protocol File](#protocol-file)
-    - [PE stole](#pe-stole)
-- [Building and Integration](#building-and-integration)
+    - [PCAP Creation Overview](#pcap-creation-overview)
+        - [TLS Handshake Steps](#tls-handshake-steps)
+        - [Client Hello](#client-hello)
+        - [Server Hello](#server-hello)
+        - [Client Key Exchange](#client-key-exchange)
+        - [Calculate Master Secret](#calculate-master-secret)
+        - [Client Change Cipher Spec](#client-change-cipher-spec)
+        - [Server Change Cipher Spec](#server-change-cipher-spec)
+        - [Create SSLKeyLog File](#create-sslkeylog-file)
+        - [Application Data Encryption](#application-data-encryption)
+        - [issue](#issue)
+    - [Create Communication Overview](#create-communication-overview)
+        - [Server File](#server-file)
+        - [Client no-cert File](#client-no-cert-file)
+        - [Client cert File](#client-cert-file)
+    - [External Services Overview](#external-services-overview)
+        - [PE stole](#pe-stole)
 - [Known Limitations](#known-limitations)
 - [Contributing](#contributing)
 - [License](#license)
@@ -99,14 +98,13 @@ Your explanation and structure for the **PCAP Creation** process, along with the
 
 ### **PCAP Creation Overview**
 
-![PCAP ScreenShot](image.png)
+![PCAP Screenshot](image-2.png)
 
 The **UnifiedTLSSession** class facilitates the simulation of a TLS session between a client and a server, enabling the creation of PCAP files.
 Core Features:
 1. **TLS Handshake**: Simulates certificate exchange and encryption negotiation to establish a secure connection.
-2. **Application Data Exchange**: Supports both encrypted (TLS) and unencrypted (HTTP) communication based on session configuration.
+2. **Application Data Exchange**: Supports both encrypted `TLS` and unencrypted `HTTP` communication based on session configuration.
 
-Example: Generating a PCAP File
 ```python
 def main():
     logging.info("\n--- Client 1 Session ---")
@@ -142,7 +140,6 @@ def main():
 
     writer.save_pcap(config.OUTPUT_PCAP)
 ```
----
 #### **Explanation**
 
 1. **Client 1 Session:**
@@ -158,7 +155,6 @@ def main():
    - The `writer.verify_and_log_packets` method ensures the correctness of the generated PCAP and logs any discrepancies.
 
 ---
-
 ### TLS Handshake Steps
 TLS Handshake Steps: Functions for each step of the TLS handshake, including ClientHello, ServerHello, key exchange, and setting up secure communication.
 ```python
@@ -188,7 +184,6 @@ def perform_handshake(self)-> None:
         self.handle_ssl_key_log()
 ```
 ---
-### **Detailed Explanations**
 #### **1. Client Hello**
 - **Purpose:** Initiates the handshake by sending the supported ciphers, extensions, and random bytes.
 - **Key Components:**
@@ -218,9 +213,11 @@ def send_client_hello(self)-> None:
 1. **Client Random:** Combines the GMT Unix timestamp and 28 random bytes.
 2. **Supported Ciphers:** Advertises the supported algorithms for encryption and hashing.
 3. **Extensions:** Adds optional features like server name indication, supported groups, and signature algorithms.
+
 ---
+
 #### **2. Server Hello**
-- **Purpose:** Responds to the `Client Hello` by selecting encryption parameters and generating the server’s random bytes.
+- **Purpose:** Responds to the `Client Hello` by selecting encryption parameters and generating the `server’s random` bytes.
 - **Key Components:**
   - **Server Random:** Similar to the client random, used in key generation.
   - **Session ID:** Unique identifier for the session.
@@ -261,11 +258,12 @@ def send_server_hello(self)-> None:
 3. **Extensions:** Adds advanced security options like extended master secrets.
 
 ---
+
 #### **3. Client Key Exchange**
-- **Purpose:** Shares the pre-master secret with the server, encrypted using the server’s public key.
+- **Purpose:** The `Client Key Exchange` step ensures secure communication by sharing the `pre-master secret` with the server. This secret is encrypted using the `server's public key`, making it accessible only to the intended recipient.
 - **Key Components:**
-  - **Pre-Master Secret:** Used to derive the master secret for symmetric encryption.
-  - **Encrypted Pre-Master Secret:** Secures the shared secret during transit.
+  - **Pre-Master Secret:** A randomly generated value used to derive the `master secret`, enabling secure symmetric encryption.
+  - **Encrypted Pre-Master Secret:** Protects the pre-master secret during transit, ensuring that only the server can decrypt it.
 ```python
 def send_client_key_exchange(self)-> None:
 
@@ -279,54 +277,101 @@ def send_client_key_exchange(self)-> None:
             self.pre_master_secret, 
             self.server_public_key
         )
-                    
-        # Prepare key exchange message
-        # validate the length of the encrypted pre-master secret
-        length_bytes = len(self.encrypted_pre_master_secret).to_bytes(2, 'big')
 
         client_key_exchange = TLSClientKeyExchange(
             exchkeys=length_bytes + self.encrypted_pre_master_secret
         )
+
         self.send_to_server(client_certificate, client_key_exchange)
 ```
 #### Explanation:
-1. **Pre-Master Secret:** Randomly generated and encrypted with the server’s public key.
-2. **Encrypted Transmission:** Ensures the server is the only entity that can decrypt the secret.
+1. **Client Certificate:** A TLS certificate representing the client is prepared and appended to the handshake messages.
+2. **Pre-Master Secret:** A randomly generated `pre-master secret` is created for the session.
+This value serves as the foundation for deriving the `master secret` used in subsequent encryption.
+3. **Encryption:** The `pre-master secret` is encrypted using the `server's public key`, ensuring secure transmission.
+The encryption guarantees that only the server, possessing the corresponding `private key`, can decrypt it.
+4. **Key Exchange Message:** The encrypted `pre-master secret` is packaged into a key exchange message, preceded by its length in bytes.
 
 ---
 
 #### Calculate Master Secret
+- **Purpose:** The `master secret` is a crucial part of the TLS handshake, derived by both the client and server using the `pre-master secret` and `random` values exchanged during the handshake. It ensures the secure generation of session keys for encryption and integrity checks.
+- **Key Components:**
+  - **Pre-Master Secret Validation:** The server decrypts the pre-master secret sent by the client using its private key.
+Validates the decrypted secret matches the original to ensure data integrity.
+  - **Random Values:** Combines the `Client Random` and `Server Random` values generated during the handshake.
+  - **Pseudo-Random Function (PRF):** Derives the `Master Secret` using the pre-master secret and random values, ensuring it’s identical on both client and server sides.
+
 ```python
 def handle_master_secret(self)-> None:
-        # Before generating the master secret,
-        # try to decrypt the pre-master secret with server's private key
-        try:
-            decrypted_pre_master_secret = decrypt_pre_master_secret(self.encrypted_pre_master_secret, self.server_private_key)
-        except Exception as e:
-            raise ValueError("Pre-master secret does not match") from e
+        """
+        Verifies and calculates the Master Secret.
+        """
+        # Step 1: Decrypt Pre-Master Secret
+        decrypted_pre_master_secret = decrypt_pre_master_secret(
+            self.encrypted_pre_master_secret,
+            self.server_private_key
+        )
 
-        # Compute master secret
+        # Step 2: Validate Pre-Master Secret
+        if compare_to_original(decrypted_pre_master_secret, self.pre_master_secret):
+            logging.info("Pre master secret encrypted matches.")
+
+        # Step 3: Compute Master Secret using PRF
         self.master_secret = self.prf.compute_master_secret(
             self.pre_master_secret,
             self.client_random,
             self.server_random
         )
-        print(f"Master secret: {self.master_secret.hex()}")
-        # Derive key material
-        key_block = self.prf.derive_key_block(
-            self.master_secret,
-            self.server_random,
-            self.client_random,
-            2 * (16 + 32 + 16)  # 2 * (key_length + mac_key_length + iv_length)
-        )
-        self.client_write_key = key_block[:16]
-        self.server_write_key = key_block[16:32]
-        self.client_write_mac_key = key_block[32:64]
-        self.server_write_mac_key = key_block[64:96]
-        self.client_write_IV = key_block[96:112]
-        self.server_write_IV = key_block[112:128]
 ```
+#### Explanation:
+1. **Client Side:**
+   - The client encrypts the `pre_master_secret` using the server's public key from its certificate.
+   - This ensures that only the server can decrypt it.
 
+2. **Server Side:**
+   - The server decrypts the `pre_master_secret` using its private key.
+   - This step verifies that the client has a valid server certificate and ensures confidentiality.
+
+3. **Both Sides:**
+   - Using the same `pre_master_secret`, along with the `client_random` and `server_random`, both the client and server derive the same `master_secret`.
+   - This `master_secret` is the foundation for symmetric encryption keys used in the session.
+
+---
+
+### **Suggestions for Improvement**
+
+#### 1. **Logging Enhancements:**
+   - Add more logging to track potential issues during decryption and key derivation.
+   - For example:
+     ```python
+     logging.debug("Starting master secret calculation...")
+     logging.debug(f"Client Random: {self.client_random.hex()}")
+     logging.debug(f"Server Random: {self.server_random.hex()}")
+     ```
+
+#### 2. **Error Handling:**
+   - Introduce error handling to manage decryption failures or mismatches in the `pre_master_secret`.
+   - Example:
+     ```python
+     if not compare_to_original(decrypted_pre_master_secret, self.pre_master_secret):
+         raise ValueError("Decryption failed: pre_master_secret mismatch.")
+     ```
+
+#### 3. **Pseudo-Random Function (PRF):**
+   - Briefly explain how the PRF works in your README:
+     - Combines inputs (`pre_master_secret`, `client_random`, `server_random`) to produce output.
+     - Uses HMAC with a secure hash function (e.g., SHA-256).
+
+#### 4. **Diagrams and Visuals:**
+   - Consider adding a flowchart or sequence diagram showing the `master_secret` generation process. This can help readers grasp the concept visually.
+
+#### 5. **Key Security:**
+   - Highlight the importance of securely managing private keys and ensuring the integrity of transmitted data to avoid man-in-the-middle attacks.
+
+---
+
+---
 #### Client Change Cipher Spec
 ```python
 def send_client_change_cipher_spec(self)-> None:
@@ -344,8 +389,7 @@ def send_client_change_cipher_spec(self)-> None:
         self.tls_context.msg = [client_finished]
         self.send_tls_packet(self.client_ip, self.server_ip, self.client_port, self.server_port)
 ```
-Explain:
-
+......
 #### Server Change Cipher Spec packet
 ```python
 def send_server_change_cipher_spec(self):
@@ -621,6 +665,8 @@ SERVER_PORT = 8110
 SERVER_IP = "0.0.0.0"
 ENCRYPTION_KEY = "RandomEncryptionKey123!@#"
 ```
+
+### External Services Overview
 
 ### PE stole
 PDF Structure Hint
