@@ -2,7 +2,7 @@
 
 This repository provides a simple implementation of a vulnerable server and client that communicate over TLS.
 
-![alt text](pcap-image.png)
+![Diagram](image-1.png)
 ## Table of Contents
 
 - [Frame story](#frame-story)
