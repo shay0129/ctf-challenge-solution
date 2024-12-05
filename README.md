@@ -1,6 +1,7 @@
 # my CTF - BackGround
 
-This repository provides a simple implementation of ...
+This repository provides a simple implementation of a vulnerable server and client that communicate over TLS.
+
 ![alt text](pcap-image.png)
 ## Table of Contents
 
@@ -8,7 +9,7 @@ This repository provides a simple implementation of ...
 - [Subjects](#subjects)
 - [Challenge Steps](#challenge-steps)
 - [Usage](#usage)
-  - [PCAP Creation](#pcap-creation)
+  - [PCAP Creation Overview](#pcap-creation)
     - [TLS Handshake Steps](#tls-handshake-steps)
     - [Client Hello](#client-hello)
     - [Server Hello](#server-hello)
@@ -24,6 +25,7 @@ This repository provides a simple implementation of ...
     - [Client no-cert File](#client-no-cert-file)
     - [Client cert File](#client-cert-file)
     - [Protocol File](#protocol-file)
+    - [PE stole](#pe-stole)
 - [Building and Integration](#building-and-integration)
 - [Known Limitations](#known-limitations)
 - [Contributing](#contributing)
@@ -91,105 +93,112 @@ The challenge covers various skills including:
 
 ## Usage
 
-### PE stole
-PDF Structure Hint
+Your explanation and structure for the **PCAP Creation** process, along with the associated **UnifiedTLSSession** class, is excellent! Here's a refined breakdown and some additional enhancements you might consider:
 
-The PDF file contains two hidden executables:
+---
 
-1. server.exe: A standard PE file
-2. client1.exe: An encrypted PE file
+### **PCAP Creation Overview**
 
-Structure:
-[PDF Content]
-[server.exe (PE format)]
-[Magic Number: 0xDEADBEEF + Encrypted Key]
-[Encrypted client1.exe]
+![PCAP ScreenShot](image.png)
 
-Hint: 
-- Look for the PE header to find the start of server.exe. 
-- The magic number 0xDEADBEEF marks the end of server.exe and the start of the encrypted client1.exe.
-- The encryption key for client1.exe is hidden within the magic number itself.
+The **UnifiedTLSSession** class facilitates the simulation of a TLS session between a client and a server, enabling the creation of PCAP files.
+Core Features:
+1. **TLS Handshake**: Simulates certificate exchange and encryption negotiation to establish a secure connection.
+2. **Application Data Exchange**: Supports both encrypted (TLS) and unencrypted (HTTP) communication based on session configuration.
 
-Challenge:
-Can you find the encryption key hidden in the magic number? 
-It's not just 0xDEADBEEF - there's more to it!
-
-
-### PCAP Creation
-Code for generating the PCAP file using Scapy, simulating the TLS handshake and application data exchange between the client and server.
+Example: Generating a PCAP File
 ```python
 def main():
-    config = Config()
-    writer = CustomPcapWriter(config)
-    # clear the SSL_KEYLOG_FILE
-    with open(config.SSL_KEYLOG_FILE, "w") as f:
-        pass
-
     logging.info("\n--- Client 1 Session ---")
-    client1_session = UnifiedTLSSession(writer, config.CLIENT1_IP, config.SERVER_IP, 12345, 443, use_tls=True, use_client_cert=True)
-    client1_session.run_session(config.GET_REQUEST, config.OK_RESPONSE, 'flag.jpeg')
-    client1_session.verify_tls_session()  # Verify TLS session for Client 1
+    client1_session = UnifiedTLSSession(
+        pcap_writer = writer,
+        client_ip = config.CLIENT1_IP,
+        server_ip = config.SERVER_IP,
+        client_port=12345,
+        server_port=443,
+        use_tls=True,
+        use_client_cert=True
+    )
+    client1_session.run_session(
+        config.GET_REQUEST,
+        config.OK_RESPONSE,
+        'ctf_challenge.gif'
+    )
 
     logging.info("\n--- Client 2 Session ---")
-    client2_session = UnifiedTLSSession(writer, config.CLIENT2_IP, config.SERVER_IP, 12346, 443, use_tls=True, use_client_cert=False)
-    client2_session.run_session(config.GET_REQUEST, config.BAD_REQUEST)
+    client2_session = UnifiedTLSSession(
+        pcap_writer = writer,
+        client_ip = config.CLIENT2_IP,
+        server_ip = config.SERVER_IP,
+        client_port=12346,
+        server_port=443,
+        use_tls=True,
+        use_client_cert=False
+    )
+    client2_session.run_session(
+        config.GET_REQUEST,
+        config.BAD_REQUEST
+    )
 
     writer.save_pcap(config.OUTPUT_PCAP)
-    writer.verify_and_log_packets()
-
 ```
-Explain:
-Client01 do TLS Handshake with the server while sending Cleint Cert.
-Client01 ask a resource from the server, and he send it.
-The connection between them after handshake is secure.
-Client02 do TLS Handshake without send Client cert.
-Client02 ask a resource from the server, and he dont send it, but send 400 status code.
-The connection between them after handshake is not secure.
+---
+#### **Explanation**
+
+1. **Client 1 Session:**
+   - Initiates a secure TLS handshake with the server.
+   - Sends a valid GET request and receives a response containing a GIF file (`ctf_challenge.gif`).
+
+2. **Client 2 Session:**
+   - Attempts to connect but does not provide a client certificate.
+   - Receives a `400 Bad Request` response due to certificate verification failure.
+
+3. **PCAP File Generation:**
+   - The `writer.save_pcap` method writes the recorded packets to the specified file (`config.OUTPUT_PCAP`).
+   - The `writer.verify_and_log_packets` method ensures the correctness of the generated PCAP and logs any discrepancies.
+
+---
 
 ### TLS Handshake Steps
 TLS Handshake Steps: Functions for each step of the TLS handshake, including ClientHello, ServerHello, key exchange, and setting up secure communication.
 ```python
 def perform_handshake(self)-> None:
-        # According to RFC 5246, the TLS handshake process is as follows:
-        try:
-            # Step 1: Client Hello
-            self.send_client_hello()
-            
-            # Step 2: Server Hello, Certificate, ServerKeyExchange (if needed), ServerHelloDone
-            self.send_server_hello()
-            
-            # Step 3: Client (RSA) Key Exchange (and Client Certificate if required)
-            self.send_client_key_exchange()
-            
-            # Step 4: Generate Master Secret
-            self.handle_master_secret()
-            
-            # Step 5: Client ChangeCipherSpec and Finished
-            self.send_client_change_cipher_spec()
-            
-            # Step 6: Server ChangeCipherSpec and Finished
-            self.send_server_change_cipher_spec()
-            
-            # Step 7: Log SSL keys for Wireshark
-            self.handle_ssl_key_log()
-            
-            logging.info("TLS Handshake completed successfully")
-        except Exception as e:
-            logging.error(f"TLS Handshake failed: {str(e)}")
-            raise e
+        """
+        Executes the TLS handshake process according to RFC 5246.
+        """
+        # Step 1: Client Hello
+        self.send_client_hello()
+        
+        # Step 2: Server Hello, Certificate, ServerKeyExchange (if needed), ServerHelloDone
+        self.send_server_hello()
+        
+        # Step 3: Client (RSA) Key Exchange (and Client Certificate if required)
+        self.send_client_key_exchange()
+        
+        # Step 4: Generate Master Secret
+        self.handle_master_secret()
+        
+        # Step 5: Client ChangeCipherSpec and Finished
+        self.send_client_change_cipher_spec()
+        
+        # Step 6: Server ChangeCipherSpec and Finished
+        self.send_server_change_cipher_spec()
+        
+        # Log SSL keys for Wireshark
+        self.handle_ssl_key_log()
 ```
-Explain:
-1. Client Hello - The client tell to server the encryption algorithms he support, and choose random bytes for idendify.
-2. Server Hello -
-3. Client key Exchange - Client send to server an encrypted shared key, that only server can decrypt it and calculate a main shared key.
-4. Each side calculate this shared key. server - with a decrypted key and client with original key.
-5. 
-
-### Client Hello
+---
+### **Detailed Explanations**
+#### **1. Client Hello**
+- **Purpose:** Initiates the handshake by sending the supported ciphers, extensions, and random bytes.
+- **Key Components:**
+  - **Client Random:** Combines current time (`GMT Unix time`) and random bytes for session identification.
+  - **Supported Ciphers:** Lists encryption algorithms supported by the client.
 ```python
 def send_client_hello(self)-> None:
         self.client_GMT_unix_time, self.client_random_bytes = generate_random()
         self.client_random = self.client_GMT_unix_time.to_bytes(4, 'big') + self.client_random_bytes
+        logging.info(f"Generated client_random: {self.client_random.hex()}")
         
         client_hello = TLSClientHello(
             version=0x0303,  # TLS 1.2
@@ -203,95 +212,88 @@ def send_client_hello(self)-> None:
             gmt_unix_time=self.client_GMT_unix_time,
             random_bytes=self.client_random_bytes
         )
-        self.tls_context.msg = [client_hello]
-        self.send_tls_packet(self.client_ip, self.server_ip, self.client_port, self.server_port)
+        self.send_to_server(client_hello)
 ```
-Explain:
-Client Random Record included GMT unix time and random bytes.
-Client is offer the ciphers he support (only one, in this case).
-Client ...rsa???
-#### Server Hello
+#### Explanation:
+1. **Client Random:** Combines the GMT Unix timestamp and 28 random bytes.
+2. **Supported Ciphers:** Advertises the supported algorithms for encryption and hashing.
+3. **Extensions:** Adds optional features like server name indication, supported groups, and signature algorithms.
+---
+#### **2. Server Hello**
+- **Purpose:** Responds to the `Client Hello` by selecting encryption parameters and generating the server’s random bytes.
+- **Key Components:**
+  - **Server Random:** Similar to the client random, used in key generation.
+  - **Session ID:** Unique identifier for the session.
 ```python
 def send_server_hello(self)-> None:      
+        # Generate a Server Random
         self.server_GMT_unix_time, self.server_random_bytes = generate_random()
         self.server_random = self.server_GMT_unix_time.to_bytes(4, 'big') + self.server_random_bytes
-
-        self.session_id = os.urandom(32)
-        try:
-            
-            cert = load_cert(self.server_name+".pem")
-            cert_der = cert.public_bytes(serialization.Encoding.PEM)
-            # Extract the public key from the certificate
-            self.server_public_key = cert.public_key()
-
-        except Exception as e:
-            logging.error(f"Error loading server certificate: {str(e)}")
-            raise
+        logging.info(f"Generated server_random: {self.server_random.hex()}")
 
         server_hello = TLSServerHello(
             version=0x0303,  # TLS 1.2
             gmt_unix_time=self.server_GMT_unix_time,
             random_bytes=self.server_random_bytes,
-            sid = self.session_id,
+            sid = os.urandom(32),
             cipher=TLS_RSA_WITH_AES_128_CBC_SHA256.val,
             ext=[
-                #TLS_Ext_ServerName(servernames=[ServerName(servername="Pasdaran.local")]), # need fix this extantion
-                #TLS_Ext_SupportedGroups(groups=['secp256r1', 'x25519']), # relevant for ECDHE key exchange
                 TLS_Ext_SignatureAlgorithms(sig_algs=['sha256+rsaepss']),
                 TLS_Ext_ExtendedMasterSecret(),
                 TLS_Ext_EncryptThenMAC()
                 ]
             )
         
-        # Server Certificate
-        certificate = TLSCertificate(certs=[(len(cert_der), cert_der)])
+        certificate = TLSCertificate(certs=cert_entries)
 
-        # Add this line to explicitly set the TLS version for the session
-        self.tls_context.tls_version = 0x0303  # TLS 1.2
-
-        self.tls_context.msg = [server_hello, certificate, TLSCertificateRequest(), TLSServerHelloDone()]
-        self.send_tls_packet(self.server_ip, self.client_ip, self.server_port, self.client_port)
+        cert_request = TLSCertificateRequest(
+            ctypes=[1],  # RSA certificate type
+            sig_algs=[0x0401],  # SHA256 + RSA
+            certauth=[
+                (len(ca_dn), ca_dn)  # Use only the Distinguished Name
+            ]
+        )
+        self.send_to_client(server_hello, certificate, cert_request, TLSServerHelloDone())
 ```
-Explain:
+#### Explanation:
+1. **Server Random:** Combines a timestamp and random bytes for key generation.
+2. **Selected Cipher:** Agrees upon one cipher suite from the client’s list.
+3. **Extensions:** Adds advanced security options like extended master secrets.
 
-#### Client Key Exchange
+---
+#### **3. Client Key Exchange**
+- **Purpose:** Shares the pre-master secret with the server, encrypted using the server’s public key.
+- **Key Components:**
+  - **Pre-Master Secret:** Used to derive the master secret for symmetric encryption.
+  - **Encrypted Pre-Master Secret:** Secures the shared secret during transit.
 ```python
 def send_client_key_exchange(self)-> None:
-        client_certificate = None
-        if self.use_client_cert:
-            try:
-                cert = load_cert("Pasdaran.local.crt")
-                cert_der = cert.public_bytes(serialization.Encoding.DER)
-                client_certificate = TLSCertificate(certs=[(len(cert_der), cert_der)])
-            except Exception as e:
-                logging.error(f"Error handling client certificate: {str(e)}")
-                raise e
-        try:
-            self.pre_master_secret = generate_pre_master_secret()
 
-            # Encrypt pre-master secret with server's public key who extracted from server certificate
-            self.encrypted_pre_master_secret = encrypt_pre_master_secret(self.pre_master_secret, self.server_public_key)
-            
-            if not isinstance(self.encrypted_pre_master_secret, bytes):
-                self.encrypted_pre_master_secret = bytes(self.encrypted_pre_master_secret)
+        # Client Certificate Handle
+        client_certificate = TLSCertificate(certs=[(len(cert_der), cert_der)])
+        self.handshake_messages.append(raw(client_certificate))
 
+        # Client (RSA) Key Exchange
+        self.pre_master_secret = generate_pre_master_secret()
+        self.encrypted_pre_master_secret = encrypt_pre_master_secret(
+            self.pre_master_secret, 
+            self.server_public_key
+        )
+                    
+        # Prepare key exchange message
+        # validate the length of the encrypted pre-master secret
+        length_bytes = len(self.encrypted_pre_master_secret).to_bytes(2, 'big')
 
-            # validate the length of the encrypted pre-master secret
-            length_bytes = len(self.encrypted_pre_master_secret).to_bytes(2, 'big')
-
-            # יצירת המבנה המלא של ClientKeyExchange
-            client_key_exchange_data = length_bytes + self.encrypted_pre_master_secret
-
-            client_key_exchange = TLSClientKeyExchange(
-                exchkeys=client_key_exchange_data
-            )
-            self.tls_context.msg = [client_certificate, client_key_exchange] if client_certificate else [client_key_exchange]
-            self.send_tls_packet(self.client_ip, self.server_ip, self.client_port, self.server_port)
-
-        except Exception as e:
-            logging.error(f"Error in client key exchange: {str(e)}")
-            raise e
+        client_key_exchange = TLSClientKeyExchange(
+            exchkeys=length_bytes + self.encrypted_pre_master_secret
+        )
+        self.send_to_server(client_certificate, client_key_exchange)
 ```
+#### Explanation:
+1. **Pre-Master Secret:** Randomly generated and encrypted with the server’s public key.
+2. **Encrypted Transmission:** Ensures the server is the only entity that can decrypt the secret.
+
+---
 
 #### Calculate Master Secret
 ```python
@@ -619,6 +621,30 @@ SERVER_PORT = 8110
 SERVER_IP = "0.0.0.0"
 ENCRYPTION_KEY = "RandomEncryptionKey123!@#"
 ```
+
+### PE stole
+PDF Structure Hint
+
+The PDF file contains two hidden executables:
+
+1. server.exe: A standard PE file
+2. client1.exe: An encrypted PE file
+
+Structure:
+[PDF Content]
+[server.exe (PE format)]
+[Magic Number: 0xDEADBEEF + Encrypted Key]
+[Encrypted client1.exe]
+
+Hint: 
+- Look for the PE header to find the start of server.exe. 
+- The magic number 0xDEADBEEF marks the end of server.exe and the start of the encrypted client1.exe.
+- The encryption key for client1.exe is hidden within the magic number itself.
+
+Challenge:
+Can you find the encryption key hidden in the magic number? 
+It's not just 0xDEADBEEF - there's more to it!
+
 ## Analyzing Protocol Tools
 
 used:
