@@ -1,110 +1,126 @@
-2024-12-01 19:25:52,374 - INFO - 
+2024-12-05 16:00:07,108 - INFO - 
 --- Client 1 Session ---
-2024-12-01 19:25:52,390 - INFO - Successfully loaded certificate from ../certificates/guards-ca.crt
-2024-12-01 19:25:52,390 - INFO - Subject: <Name(CN=CTF CA,C=IL)>
-2024-12-01 19:25:52,390 - INFO - Issuer: <Name(CN=CTF CA,C=IL)>
-2024-12-01 19:25:52,390 - INFO - Valid from: 2024-10-22 12:16:24
-2024-12-01 19:25:52,390 - INFO - Valid until: 2034-10-20 12:16:24
-2024-12-01 19:25:52,412 - INFO - Successfully loaded certificate from ../certificates/server.der
-2024-12-01 19:25:52,412 - INFO - Subject: <Name(C=IR,ST=Tehran,L=Tehran,O=Pasdaran,OU=Cyber,CN=server.local)>
-2024-12-01 19:25:52,412 - INFO - Issuer: <Name(CN=CTF CA,C=IL)>
-2024-12-01 19:25:52,412 - INFO - Valid from: 2024-11-18 16:01:12
-2024-12-01 19:25:52,412 - INFO - Valid until: 2025-11-18 16:01:12
-2024-12-01 19:25:52,412 - INFO - Keys and certificate successfully loaded for server: ../certificates/server.der
-2024-12-01 19:25:52,412 - INFO - Certificate subject: <Name(C=IR,ST=Tehran,L=Tehran,O=Pasdaran,OU=Cyber,CN=server.local)>
-2024-12-01 19:25:52,412 - INFO - Certificate validity: 2024-11-18 16:01:12+00:00 to 2025-11-18 16:01:12+00:00
-2024-12-01 19:25:52,412 - INFO - Server public key matches certificate
-2024-12-01 19:25:52,412 - INFO - Modulus (n): 0xafedafe6720371476bf4608e19f64e4b1d8d1cab23db8a6b2daa768d95a3a3474e73a5212112ca9c9fcac54b8fa4915a81ecf9e004b01369b32db986956bd220281aa196dce5196a20b2bd712fe386b9a7d82c1d4f77152263903ce4196f6f6c02cb5620cbb26798bdaea5db7a00c01a0c61ea2c9f1e794639291aff81c5e093ca861c5ac5f7925ad5b56908a98628a4b43459787d893ee8c0d89debd67f7f21fe6c75d07da5e949cb017e51742a1e663789cb920c0cb2ea01b9f578ff2db3a0cc4ab9f026a7aeca79b163032cb6b0ba0d33bdcab9d3e6ccb78f604123ec4dce5cf97f3a6332cf09eaedadb7a92e368890d82db167959565aae963c18fa30e8d
-2024-12-01 19:25:52,412 - INFO - Public exponent (e): 0x10001
-2024-12-01 19:25:52,412 - INFO - Certificate chain verification successful
-2024-12-01 19:25:52,412 - INFO - Certificate chain verification passed
-2024-12-01 19:25:52,412 - INFO - Certificate chain loaded successfully
-2024-12-01 19:25:52,412 - INFO - Server cert subject: <Name(C=IR,ST=Tehran,L=Tehran,O=Pasdaran,OU=Cyber,CN=server.local)>
-2024-12-01 19:25:52,412 - INFO - Server public key: 22208911251432002177928588172648340397340654277141800361861953770308376597618907660085252725477587248172837374829929916465323036123326529540222433156023304838942493339102915098001413092039562568014980579718275239797228062298659392426010371344394840092685893137575330261633465827490138833879213641124040857402658876054249469234715817781475820963478808517137961987575162553182700462590856421220219054909729107185906062809466127357014172377775813407953875221025531023615959805993354371169414051797308040773772434548931748990754933386530683682614622181534609188827274572477007549984482107496040505306045673277390479101581
-2024-12-01 19:25:52,412 - INFO - CA cert subject: <Name(CN=CTF CA,C=IL)>
-2024-12-01 19:25:52,412 - INFO - Generated client_random: 674c9c2067f9e80f28a7e8ab3f4b7258525d56d7817da66cc7f4c1a5d15c0a26
-2024-12-01 19:25:52,428 - INFO - Client Hello sent from 192.168.1.1
-2024-12-01 19:25:52,428 - INFO - Generated server_random: 674c9c20232d6dabbc1f4db610dfb6790f90990d7207f5eeffe4f16d2708bbaf
-2024-12-01 19:25:52,428 - INFO - Successfully loaded certificate from ../certificates/client.crt
-2024-12-01 19:25:52,428 - INFO - Subject: <Name(CN=Pasdaran.local,C=IL)>
-2024-12-01 19:25:52,428 - INFO - Issuer: <Name(CN=CTF CA,C=IL)>
-2024-12-01 19:25:52,428 - INFO - Valid from: 2024-10-22 12:16:44
-2024-12-01 19:25:52,428 - INFO - Valid until: 2025-10-22 12:16:44
-2024-12-01 19:25:52,428 - INFO - Encrypted pre_master_secret length: 256
-2024-12-01 19:25:52,444 - INFO - Server decrypted pre_master_secret: 03030003e2ebc761e05b6cd46c77b6037df03b6971ec4c3ae0756474ba1183e9f4a225a139e3045ff0fa4d4b95c4a010
-2024-12-01 19:25:52,444 - INFO - Comparison successful
-2024-12-01 19:25:52,444 - INFO - Pre master secret encrypted matches.
-2024-12-01 19:25:52,444 - INFO - Master secret: 7eae1093d76cf2e7211f6dffba3ff17d7bbccd71959e36ec8d1054184f329d804df31b80255df4f1d32bb54b3e72ed27
-2024-12-01 19:25:52,444 - INFO - Client ChangeCipherSpec and Finished sent from 192.168.1.1
-2024-12-01 19:25:52,444 - INFO - Server decrypted pre_master_secret: 03030003e2ebc761e05b6cd46c77b6037df03b6971ec4c3ae0756474ba1183e9f4a225a139e3045ff0fa4d4b95c4a010
-2024-12-01 19:25:52,444 - INFO - Server Finished sent to 192.168.1.1
-2024-12-01 19:25:52,444 - INFO - SSL keys logged successfully to ../api/sslkeylog_ctf.log
-2024-12-01 19:25:52,444 - INFO - TLS Handshake completed successfully
-2024-12-01 19:25:52,444 - INFO - 
+2024-12-05 16:00:07,108 - INFO - Successfully loaded certificate from ../certificates/guards-ca.crt
+2024-12-05 16:00:07,108 - INFO - Subject: <Name(CN=CTF CA,C=IL)>
+2024-12-05 16:00:07,108 - INFO - Issuer: <Name(CN=CTF CA,C=IL)>
+2024-12-05 16:00:07,108 - INFO - Valid from: 2024-10-22 12:16:24
+2024-12-05 16:00:07,108 - INFO - Valid until: 2034-10-20 12:16:24
+2024-12-05 16:00:07,123 - INFO - Successfully loaded certificate from ../certificates/server.der
+2024-12-05 16:00:07,123 - INFO - Subject: <Name(C=IR,ST=Tehran,L=Tehran,O=Pasdaran,OU=Cyber,CN=server.local)>
+2024-12-05 16:00:07,123 - INFO - Issuer: <Name(CN=CTF CA,C=IL)>
+2024-12-05 16:00:07,123 - INFO - Valid from: 2024-11-18 16:01:12
+2024-12-05 16:00:07,123 - INFO - Valid until: 2025-11-18 16:01:12
+2024-12-05 16:00:07,123 - INFO - Keys and certificate successfully loaded for server: ../certificates/server.der
+2024-12-05 16:00:07,123 - INFO - Certificate subject: <Name(C=IR,ST=Tehran,L=Tehran,O=Pasdaran,OU=Cyber,CN=server.local)>
+2024-12-05 16:00:07,123 - INFO - Certificate validity: 2024-11-18 16:01:12+00:00 to 2025-11-18 16:01:12+00:00
+2024-12-05 16:00:07,123 - INFO - Server public key matches certificate
+2024-12-05 16:00:07,123 - INFO - Modulus (n): 0xafedafe6720371476bf4608e19f64e4b1d8d1cab23db8a6b2daa768d95a3a3474e73a5212112ca9c9fcac54b8fa4915a81ecf9e004b01369b32db986956bd220281aa196dce5196a20b2bd712fe386b9a7d82c1d4f77152263903ce4196f6f6c02cb5620cbb26798bdaea5db7a00c01a0c61ea2c9f1e794639291aff81c5e093ca861c5ac5f7925ad5b56908a98628a4b43459787d893ee8c0d89debd67f7f21fe6c75d07da5e949cb017e51742a1e663789cb920c0cb2ea01b9f578ff2db3a0cc4ab9f026a7aeca79b163032cb6b0ba0d33bdcab9d3e6ccb78f604123ec4dce5cf97f3a6332cf09eaedadb7a92e368890d82db167959565aae963c18fa30e8d
+2024-12-05 16:00:07,123 - INFO - Public exponent (e): 0x10001
+2024-12-05 16:00:07,123 - INFO - Certificate chain verification successful
+2024-12-05 16:00:07,123 - INFO - Certificate chain verification passed
+2024-12-05 16:00:07,123 - INFO - Certificate chain loaded successfully
+2024-12-05 16:00:07,123 - INFO - Server cert subject: <Name(C=IR,ST=Tehran,L=Tehran,O=Pasdaran,OU=Cyber,CN=server.local)>
+2024-12-05 16:00:07,123 - INFO - Server public key: 22208911251432002177928588172648340397340654277141800361861953770308376597618907660085252725477587248172837374829929916465323036123326529540222433156023304838942493339102915098001413092039562568014980579718275239797228062298659392426010371344394840092685893137575330261633465827490138833879213641124040857402658876054249469234715817781475820963478808517137961987575162553182700462590856421220219054909729107185906062809466127357014172377775813407953875221025531023615959805993354371169414051797308040773772434548931748990754933386530683682614622181534609188827274572477007549984482107496040505306045673277390479101581
+2024-12-05 16:00:07,123 - INFO - CA cert subject: <Name(CN=CTF CA,C=IL)>
+2024-12-05 16:00:07,123 - INFO - Generated client_random: 6751b1e7711a0ba597b264ad431dda223bf619de4f285f078adff670dfa9f9e2
+2024-12-05 16:00:07,123 - INFO - Sending packet to server: TLSClientHello
+2024-12-05 16:00:07,123 - INFO - Client Hello sent from 192.168.1.1
+2024-12-05 16:00:07,123 - INFO - Generated server_random: 6751b1e75876c57878c59de7f42ca38500a9494db66907d43c23f44b0faa25ae
+2024-12-05 16:00:07,123 - INFO - Sending packet to client: TLSServerHello
+2024-12-05 16:00:07,123 - INFO - Sending packet to client: TLSCertificate
+2024-12-05 16:00:07,123 - INFO - Sending packet to client: TLSCertificateRequest
+2024-12-05 16:00:07,123 - INFO - Sending packet to client: TLSServerHelloDone
+2024-12-05 16:00:07,139 - INFO - Successfully loaded certificate from ../certificates/client.crt
+2024-12-05 16:00:07,139 - INFO - Subject: <Name(CN=Pasdaran.local,C=IL)>
+2024-12-05 16:00:07,139 - INFO - Issuer: <Name(CN=CTF CA,C=IL)>
+2024-12-05 16:00:07,139 - INFO - Valid from: 2024-10-22 12:16:44
+2024-12-05 16:00:07,139 - INFO - Valid until: 2025-10-22 12:16:44
+2024-12-05 16:00:07,139 - INFO - Client certificate prepared.
+2024-12-05 16:00:07,139 - INFO - Encrypted pre_master_secret length: 256
+2024-12-05 16:00:07,139 - INFO - Sending packet to server: TLSCertificate
+2024-12-05 16:00:07,139 - INFO - Client certificate sent to server.
+2024-12-05 16:00:07,139 - INFO - Sending packet to server: TLSClientKeyExchange
+2024-12-05 16:00:07,139 - INFO - Client Key Exchange sent to server.
+2024-12-05 16:00:07,139 - INFO - Server decrypted pre_master_secret: 03031a757868e0b2464b14f6c32e65071566027ad4991cf646ef18697430993ab604534b9546431bbbfb61557b5497fe
+2024-12-05 16:00:07,139 - INFO - Comparison successful
+2024-12-05 16:00:07,139 - INFO - Pre master secret encrypted matches.
+2024-12-05 16:00:07,139 - INFO - Master secret: 0e5c2058821c169ec314f18fcb1ef50f169c6540213ec50f9a412fcb5e5ba46b0074af975d88fe019437441d55295c22
+2024-12-05 16:00:07,139 - INFO - Client ChangeCipherSpec and Finished messages sent.
+2024-12-05 16:00:07,139 - INFO - Server ChangeCipherSpec and Finished messages sent.
+2024-12-05 16:00:07,155 - INFO - SSL keys logged successfully to ../api/sslkeylog_ctf.log
+2024-12-05 16:00:07,155 - INFO - TLS Handshake completed successfully
+2024-12-05 16:00:07,155 - INFO - TLS Application Data sent from 192.168.1.1:12345 to 10.0.0.1:443
+2024-12-05 16:00:07,155 - INFO - TLS Application Data sent from 10.0.0.1:443 to 192.168.1.1:12345
+2024-12-05 16:00:07,155 - INFO - TLS Application Data sent from 10.0.0.1:443 to 192.168.1.1:12345
+2024-12-05 16:00:07,155 - INFO - TLS Handshake completed. Encrypted communication initiated.
+2024-12-05 16:00:07,155 - INFO - 
 --- Client 2 Session ---
-2024-12-01 19:25:52,444 - INFO - Successfully loaded certificate from ../certificates/guards-ca.crt
-2024-12-01 19:25:52,444 - INFO - Subject: <Name(CN=CTF CA,C=IL)>
-2024-12-01 19:25:52,444 - INFO - Issuer: <Name(CN=CTF CA,C=IL)>
-2024-12-01 19:25:52,444 - INFO - Valid from: 2024-10-22 12:16:24
-2024-12-01 19:25:52,444 - INFO - Valid until: 2034-10-20 12:16:24
-2024-12-01 19:25:52,459 - INFO - Successfully loaded certificate from ../certificates/server.der
-2024-12-01 19:25:52,459 - INFO - Subject: <Name(C=IR,ST=Tehran,L=Tehran,O=Pasdaran,OU=Cyber,CN=server.local)>
-2024-12-01 19:25:52,459 - INFO - Issuer: <Name(CN=CTF CA,C=IL)>
-2024-12-01 19:25:52,459 - INFO - Valid from: 2024-11-18 16:01:12
-2024-12-01 19:25:52,459 - INFO - Valid until: 2025-11-18 16:01:12
-2024-12-01 19:25:52,459 - INFO - Keys and certificate successfully loaded for server: ../certificates/server.der
-2024-12-01 19:25:52,475 - INFO - Certificate subject: <Name(C=IR,ST=Tehran,L=Tehran,O=Pasdaran,OU=Cyber,CN=server.local)>
-2024-12-01 19:25:52,475 - INFO - Certificate validity: 2024-11-18 16:01:12+00:00 to 2025-11-18 16:01:12+00:00
-2024-12-01 19:25:52,475 - INFO - Server public key matches certificate
-2024-12-01 19:25:52,475 - INFO - Modulus (n): 0xafedafe6720371476bf4608e19f64e4b1d8d1cab23db8a6b2daa768d95a3a3474e73a5212112ca9c9fcac54b8fa4915a81ecf9e004b01369b32db986956bd220281aa196dce5196a20b2bd712fe386b9a7d82c1d4f77152263903ce4196f6f6c02cb5620cbb26798bdaea5db7a00c01a0c61ea2c9f1e794639291aff81c5e093ca861c5ac5f7925ad5b56908a98628a4b43459787d893ee8c0d89debd67f7f21fe6c75d07da5e949cb017e51742a1e663789cb920c0cb2ea01b9f578ff2db3a0cc4ab9f026a7aeca79b163032cb6b0ba0d33bdcab9d3e6ccb78f604123ec4dce5cf97f3a6332cf09eaedadb7a92e368890d82db167959565aae963c18fa30e8d
-2024-12-01 19:25:52,475 - INFO - Public exponent (e): 0x10001
-2024-12-01 19:25:52,475 - INFO - Certificate chain verification successful
-2024-12-01 19:25:52,475 - INFO - Certificate chain verification passed
-2024-12-01 19:25:52,475 - INFO - Certificate chain loaded successfully
-2024-12-01 19:25:52,475 - INFO - Server cert subject: <Name(C=IR,ST=Tehran,L=Tehran,O=Pasdaran,OU=Cyber,CN=server.local)>
-2024-12-01 19:25:52,475 - INFO - Server public key: 22208911251432002177928588172648340397340654277141800361861953770308376597618907660085252725477587248172837374829929916465323036123326529540222433156023304838942493339102915098001413092039562568014980579718275239797228062298659392426010371344394840092685893137575330261633465827490138833879213641124040857402658876054249469234715817781475820963478808517137961987575162553182700462590856421220219054909729107185906062809466127357014172377775813407953875221025531023615959805993354371169414051797308040773772434548931748990754933386530683682614622181534609188827274572477007549984482107496040505306045673277390479101581
-2024-12-01 19:25:52,475 - INFO - CA cert subject: <Name(CN=CTF CA,C=IL)>
-2024-12-01 19:25:52,475 - INFO - Generated client_random: 674c9c202a3b2205682946e5478da12f7fb455edee653638bcc52ecb3af05a97
-2024-12-01 19:25:52,475 - INFO - Client Hello sent from 192.168.1.2
-2024-12-01 19:25:52,475 - INFO - Generated server_random: 674c9c2015634a11f5e8a7a162f598b0625d5e1feea4d1cb017338342ae3cfe5
-2024-12-01 19:25:52,475 - INFO - Encrypted pre_master_secret length: 256
-2024-12-01 19:25:52,475 - INFO - Server decrypted pre_master_secret: 0303f66f4715d73b68d0b7ddcb7cc5a0c66a2026eab496b1ed00f74050c3b9aded59da2cdd4005b79a3a00b5e8d19d1a
-2024-12-01 19:25:52,475 - INFO - Comparison successful
-2024-12-01 19:25:52,475 - INFO - Pre master secret encrypted matches.
-2024-12-01 19:25:52,475 - INFO - Master secret: 24457845ed7fbf2ac4431b3146511aef61202a62f884cf8a92d512a9c3de6ef96337d6aba17e80b0c67acd58c2f7f05c
-2024-12-01 19:25:52,475 - INFO - Client ChangeCipherSpec and Finished sent from 192.168.1.2
-2024-12-01 19:25:52,490 - INFO - Server decrypted pre_master_secret: 0303f66f4715d73b68d0b7ddcb7cc5a0c66a2026eab496b1ed00f74050c3b9aded59da2cdd4005b79a3a00b5e8d19d1a
-2024-12-01 19:25:52,490 - INFO - Server Finished sent to 192.168.1.2
-2024-12-01 19:25:52,490 - INFO - SSL keys logged successfully to ../api/sslkeylog_ctf.log
-2024-12-01 19:25:52,490 - INFO - TLS Handshake completed successfully
-2024-12-01 19:25:52,497 - INFO - PCAP file '../api/output.pcap' saved successfully with 15 packets.
-2024-12-01 19:25:52,497 - INFO - Starting packet verification and logging...
-2024-12-01 19:25:52,497 - INFO - Packet 1: IP / TCP 192.168.1.1:12345 > 10.0.0.1:https PA / Raw
-2024-12-01 19:25:52,497 - INFO - TLS Record: type=0x16, version=0x303, length=88
-2024-12-01 19:25:52,497 - INFO - Packet 2: IP / TCP 10.0.0.1:https > 192.168.1.1:12345 PA / Raw
-2024-12-01 19:25:52,497 - INFO - TLS Record: type=0x16, version=0x303, length=1742
-2024-12-01 19:25:52,497 - INFO - Packet 3: IP / TCP 192.168.1.1:12345 > 10.0.0.1:https PA / Raw
-2024-12-01 19:25:52,497 - INFO - TLS Record: type=0x16, version=0x303, length=991
-2024-12-01 19:25:52,497 - INFO - Packet 4: IP / TCP 192.168.1.1:12345 > 10.0.0.1:https PA / Raw
-2024-12-01 19:25:52,497 - INFO - TLS Record: type=0x16, version=0x303, length=16
-2024-12-01 19:25:52,497 - INFO - Packet 5: IP / TCP 10.0.0.1:https > 192.168.1.1:12345 PA / Raw
-2024-12-01 19:25:52,497 - INFO - TLS Record: type=0x16, version=0x303, length=16
-2024-12-01 19:25:52,497 - INFO - Packet 6: IP / TCP 192.168.1.1:12345 > 10.0.0.1:https PA / Raw
-2024-12-01 19:25:52,497 - INFO - TLS Record: type=0x17, version=0x303, length=160
-2024-12-01 19:25:52,497 - INFO - Packet 7: IP / TCP 10.0.0.1:https > 192.168.1.1:12345 PA / Raw
-2024-12-01 19:25:52,497 - INFO - TLS Record: type=0x17, version=0x303, length=128
-2024-12-01 19:25:52,497 - INFO - Packet 8: IP / TCP 10.0.0.1:https > 192.168.1.1:12345 PA / Raw
-2024-12-01 19:25:52,497 - INFO - TLS Record: type=0x17, version=0x303, length=1152
-2024-12-01 19:25:52,497 - INFO - Packet 9: IP / TCP 192.168.1.2:12346 > 10.0.0.1:https PA / Raw
-2024-12-01 19:25:52,497 - INFO - TLS Record: type=0x16, version=0x303, length=88
-2024-12-01 19:25:52,497 - INFO - Packet 10: IP / TCP 10.0.0.1:https > 192.168.1.2:12346 PA / Raw
-2024-12-01 19:25:52,497 - INFO - TLS Record: type=0x16, version=0x303, length=1742
-2024-12-01 19:25:52,497 - INFO - Packet 11: IP / TCP 192.168.1.2:12346 > 10.0.0.1:https PA / Raw
-2024-12-01 19:25:52,497 - INFO - TLS Record: type=0x16, version=0x303, length=262
-2024-12-01 19:25:52,497 - INFO - Packet 12: IP / TCP 192.168.1.2:12346 > 10.0.0.1:https PA / Raw
-2024-12-01 19:25:52,497 - INFO - TLS Record: type=0x16, version=0x303, length=16
-2024-12-01 19:25:52,497 - INFO - Packet 13: IP / TCP 10.0.0.1:https > 192.168.1.2:12346 PA / Raw
-2024-12-01 19:25:52,497 - INFO - TLS Record: type=0x16, version=0x303, length=16
-2024-12-01 19:25:52,497 - INFO - Packet 14: IP / TCP 192.168.1.2:12346 > 10.0.0.1:http PA / Raw
-2024-12-01 19:25:52,497 - INFO - Packet 15: IP / TCP 10.0.0.1:http > 192.168.1.2:12346 PA / Raw
-2024-12-01 19:25:52,497 - INFO - Packet verification and logging completed.
+2024-12-05 16:00:07,155 - INFO - Successfully loaded certificate from ../certificates/guards-ca.crt
+2024-12-05 16:00:07,155 - INFO - Subject: <Name(CN=CTF CA,C=IL)>
+2024-12-05 16:00:07,155 - INFO - Issuer: <Name(CN=CTF CA,C=IL)>
+2024-12-05 16:00:07,155 - INFO - Valid from: 2024-10-22 12:16:24
+2024-12-05 16:00:07,155 - INFO - Valid until: 2034-10-20 12:16:24
+2024-12-05 16:00:07,170 - INFO - Successfully loaded certificate from ../certificates/server.der
+2024-12-05 16:00:07,170 - INFO - Subject: <Name(C=IR,ST=Tehran,L=Tehran,O=Pasdaran,OU=Cyber,CN=server.local)>
+2024-12-05 16:00:07,170 - INFO - Issuer: <Name(CN=CTF CA,C=IL)>
+2024-12-05 16:00:07,170 - INFO - Valid from: 2024-11-18 16:01:12
+2024-12-05 16:00:07,170 - INFO - Valid until: 2025-11-18 16:01:12
+2024-12-05 16:00:07,170 - INFO - Keys and certificate successfully loaded for server: ../certificates/server.der
+2024-12-05 16:00:07,170 - INFO - Certificate subject: <Name(C=IR,ST=Tehran,L=Tehran,O=Pasdaran,OU=Cyber,CN=server.local)>
+2024-12-05 16:00:07,170 - INFO - Certificate validity: 2024-11-18 16:01:12+00:00 to 2025-11-18 16:01:12+00:00
+2024-12-05 16:00:07,170 - INFO - Server public key matches certificate
+2024-12-05 16:00:07,170 - INFO - Modulus (n): 0xafedafe6720371476bf4608e19f64e4b1d8d1cab23db8a6b2daa768d95a3a3474e73a5212112ca9c9fcac54b8fa4915a81ecf9e004b01369b32db986956bd220281aa196dce5196a20b2bd712fe386b9a7d82c1d4f77152263903ce4196f6f6c02cb5620cbb26798bdaea5db7a00c01a0c61ea2c9f1e794639291aff81c5e093ca861c5ac5f7925ad5b56908a98628a4b43459787d893ee8c0d89debd67f7f21fe6c75d07da5e949cb017e51742a1e663789cb920c0cb2ea01b9f578ff2db3a0cc4ab9f026a7aeca79b163032cb6b0ba0d33bdcab9d3e6ccb78f604123ec4dce5cf97f3a6332cf09eaedadb7a92e368890d82db167959565aae963c18fa30e8d
+2024-12-05 16:00:07,170 - INFO - Public exponent (e): 0x10001
+2024-12-05 16:00:07,170 - INFO - Certificate chain verification successful
+2024-12-05 16:00:07,170 - INFO - Certificate chain verification passed
+2024-12-05 16:00:07,170 - INFO - Certificate chain loaded successfully
+2024-12-05 16:00:07,170 - INFO - Server cert subject: <Name(C=IR,ST=Tehran,L=Tehran,O=Pasdaran,OU=Cyber,CN=server.local)>
+2024-12-05 16:00:07,170 - INFO - Server public key: 22208911251432002177928588172648340397340654277141800361861953770308376597618907660085252725477587248172837374829929916465323036123326529540222433156023304838942493339102915098001413092039562568014980579718275239797228062298659392426010371344394840092685893137575330261633465827490138833879213641124040857402658876054249469234715817781475820963478808517137961987575162553182700462590856421220219054909729107185906062809466127357014172377775813407953875221025531023615959805993354371169414051797308040773772434548931748990754933386530683682614622181534609188827274572477007549984482107496040505306045673277390479101581
+2024-12-05 16:00:07,170 - INFO - CA cert subject: <Name(CN=CTF CA,C=IL)>
+2024-12-05 16:00:07,170 - INFO - Generated client_random: 6751b1e7367f7cd068bdad79287679e61e1744c53f12eadd0ea89912f3cd0801
+2024-12-05 16:00:07,170 - INFO - Sending packet to server: TLSClientHello
+2024-12-05 16:00:07,170 - INFO - Client Hello sent from 192.168.1.2
+2024-12-05 16:00:07,170 - INFO - Generated server_random: 6751b1e7e93e717c55685643f05efc3ccae36b6f26a8ebe67dca6d7d45bd2d33
+2024-12-05 16:00:07,170 - INFO - Sending packet to client: TLSServerHello
+2024-12-05 16:00:07,170 - INFO - Sending packet to client: TLSCertificate
+2024-12-05 16:00:07,170 - INFO - Sending packet to client: TLSCertificateRequest
+2024-12-05 16:00:07,170 - INFO - Sending packet to client: TLSServerHelloDone
+2024-12-05 16:00:07,186 - INFO - Encrypted pre_master_secret length: 256
+2024-12-05 16:00:07,186 - INFO - Sending packet to server: TLSClientKeyExchange
+2024-12-05 16:00:07,186 - INFO - Client Key Exchange sent to server.
+2024-12-05 16:00:07,186 - INFO - Server decrypted pre_master_secret: 03036ce33a6c55f57daef6b07ef99260086b60392c9941a9e54c420d8b451fab7619defdd16088415d4a91fe61a53482
+2024-12-05 16:00:07,186 - INFO - Comparison successful
+2024-12-05 16:00:07,186 - INFO - Pre master secret encrypted matches.
+2024-12-05 16:00:07,186 - INFO - Master secret: 3430a3211939f05ee27279cfd746f9dde915ee2f5a137b6868f8645b097e0e91c3ad55b1eae1ac6ddfa0b09563b90f0f
+2024-12-05 16:00:07,186 - INFO - Client ChangeCipherSpec and Finished messages sent.
+2024-12-05 16:00:07,186 - INFO - Server ChangeCipherSpec and Finished messages sent.
+2024-12-05 16:00:07,186 - INFO - SSL keys logged successfully to ../api/sslkeylog_ctf.log
+2024-12-05 16:00:07,186 - INFO - TLS Handshake completed successfully
+2024-12-05 16:00:07,202 - WARNING - TLS Handshake failed or client certificate missing. Proceeding with unencrypted communication.
+2024-12-05 16:00:07,208 - INFO - PCAP file '../api/output.pcap' saved successfully with 15 packets.
+2024-12-05 16:00:07,208 - INFO - Starting packet verification and logging...
+2024-12-05 16:00:07,208 - INFO - Packet 1: IP / TCP 192.168.1.1:12345 > 10.0.0.1:https PA / Raw
+2024-12-05 16:00:07,208 - INFO - TLS Record: type=0x16, version=0x303, length=88
+2024-12-05 16:00:07,208 - INFO - Packet 2: IP / TCP 10.0.0.1:https > 192.168.1.1:12345 PA / Raw
+2024-12-05 16:00:07,208 - INFO - TLS Record: type=0x16, version=0x303, length=1742
+2024-12-05 16:00:07,208 - INFO - Packet 3: IP / TCP 192.168.1.1:12345 > 10.0.0.1:https PA / Raw
+2024-12-05 16:00:07,208 - INFO - TLS Record: type=0x16, version=0x303, length=991
+2024-12-05 16:00:07,208 - INFO - Packet 4: IP / TCP 192.168.1.1:12345 > 10.0.0.1:https PA / Raw
+2024-12-05 16:00:07,208 - INFO - Packet 5: IP / TCP 10.0.0.1:https > 192.168.1.1:12345 PA / Raw
+2024-12-05 16:00:07,208 - INFO - Packet 6: IP / TCP 192.168.1.1:12345 > 10.0.0.1:https PA / Raw
+2024-12-05 16:00:07,208 - INFO - TLS Record: type=0x17, version=0x303, length=160
+2024-12-05 16:00:07,208 - INFO - Packet 7: IP / TCP 10.0.0.1:https > 192.168.1.1:12345 PA / Raw
+2024-12-05 16:00:07,208 - INFO - TLS Record: type=0x17, version=0x303, length=128
+2024-12-05 16:00:07,208 - INFO - Packet 8: IP / TCP 10.0.0.1:https > 192.168.1.1:12345 PA / Raw
+2024-12-05 16:00:07,208 - INFO - TLS Record: type=0x17, version=0x303, length=1152
+2024-12-05 16:00:07,208 - INFO - Packet 9: IP / TCP 192.168.1.2:12346 > 10.0.0.1:https PA / Raw
+2024-12-05 16:00:07,208 - INFO - TLS Record: type=0x16, version=0x303, length=88
+2024-12-05 16:00:07,208 - INFO - Packet 10: IP / TCP 10.0.0.1:https > 192.168.1.2:12346 PA / Raw
+2024-12-05 16:00:07,208 - INFO - TLS Record: type=0x16, version=0x303, length=1742
+2024-12-05 16:00:07,208 - INFO - Packet 11: IP / TCP 192.168.1.2:12346 > 10.0.0.1:https PA / Raw
+2024-12-05 16:00:07,208 - INFO - TLS Record: type=0x16, version=0x303, length=262
+2024-12-05 16:00:07,208 - INFO - Packet 12: IP / TCP 192.168.1.2:12346 > 10.0.0.1:https PA / Raw
+2024-12-05 16:00:07,208 - INFO - Packet 13: IP / TCP 10.0.0.1:https > 192.168.1.2:12346 PA / Raw
+2024-12-05 16:00:07,208 - INFO - Packet 14: IP / TCP 192.168.1.2:12346 > 10.0.0.1:http PA / Raw
+2024-12-05 16:00:07,208 - INFO - Packet 15: IP / TCP 10.0.0.1:http > 192.168.1.2:12346 PA / Raw
+2024-12-05 16:00:07,208 - INFO - Packet verification and logging completed.

@@ -2,12 +2,11 @@
 
 ## **Introduction**
 This repository contains a Capture The Flag (CTF) challenge that simulates vulnerabilities in TLS communication. Participants will analyze traffic, fix clients, and create secure communications using cryptography, reverse engineering, and network analysis tools.
-![Diagram](image-1.png)
+![CTF Diagram](api/ctf-diagram.png)
 
 ## Table of Contents
 - [Challenge Description](#challenge-description)
 - [Subjects](#subjects)
-- [Challenge Steps](#challenge-steps)
 - [Usage](#usage)
     - [PCAP Creation Overview](#pcap-creation-overview)
         - [TLS Handshake Steps](#tls-handshake-steps)
@@ -20,13 +19,15 @@ This repository contains a Capture The Flag (CTF) challenge that simulates vulne
         - [Create SSLKeyLog File](#create-sslkeylog-file)
         - [Application Data Encryption](#application-data-encryption)
         - [issue](#issue)
-    - [Create Communication Overview](#create-communication-overview)
-        - [Server File](#server-file)
-        - [Client no-cert File](#client-no-cert-file)
-        - [Client cert File](#client-cert-file)
+    - [SSL Communication Overview](#ssl-communication-overview)
+        - [Server Implementation](#server-implementation)
+        - [Basic Client Handle](#basic-client-handle)
+        - [Advanced Client Handle](#advanced-client-handle)
     - [External Services Overview](#external-services-overview)
         - [PE stole](#pe-stole)
-    [External Tools](#external-tools)
+- [Challenge Steps](#challenge-steps)
+- [Participants Solution](#participants-solution)
+- [External Tools](#external-tools)
 - [Known Limitations](#known-limitations)
 - [Contributing](#contributing)
 - [License](#license)
@@ -74,47 +75,6 @@ This challenge develops a broad range of technical skills, including:
 
 ---
 
-## Challenge Steps
-
-1. **File Extraction**  
-   - Begin with `mission.pdf`.  
-   - Extract the hidden files using steganography techniques:  
-     - `server.exe`  
-     - Corrupted `client.exe`.
-
-2. **Fixing the Client**  
-   - Run `server.exe` to retrieve the encryption key (a random character sequence).  
-   - Develop a Python script to decrypt `client.exe`.  
-   - Repair and make `client.exe` executable.
-
-3. **Communication Analysis**  
-   - Execute `server.exe` and `client.exe` simultaneously.  
-   - Examine `capture.pcapng` extracted from `mission.pdf`.  
-   - Identify the server's behavior: only clients with a valid certificate during the TLS Handshake can access the resource.
-
-4. **Creating a Second Client**  
-   - Develop `client2.exe` with unique attributes to avoid duplication issues.  
-   - Ensure `client2.exe` loads a certificate, unlike `client1`.  
-   - Enable both clients to connect concurrently without conflicts.
-
-5. **Generating a Self-Signed Certificate**  
-   - Create a self-signed certificate without relying on a Certificate Authority (CA).  
-   - Embed the certificate into `client2`'s code.  
-   - Confirm the server recognizes the certificate during the TLS Handshake.  
-   - Optionally set up a localhost domain for testing.  
-   - Prepare for the server’s potential requirement of DER-formatted certificates instead of CRT.
-
-6. **Certificate Request Signing (CRS) File Verification**  
-   - Load the CRS file into `client2` post-certificate loading.  
-   - Validate proper certificate creation steps to ensure integrity.  
-   - Block bypass attempts using scripts for fake certificates.
-
-7. **Retrieving the Flag**  
-   - Use `client2` to receive `resource.png` from the server.  
-   - Identify the embedded flag in the image.  
-   - Submit the flag to successfully complete the challenge.
-
----
 
 ## Usage
 
@@ -235,7 +195,7 @@ def send_client_hello(self)-> None:
         )
         self.send_to_server(client_hello)
 ```
-#### Explanation:
+ ***Explanation:***
 1. **Client Random:** Combines the GMT Unix timestamp and 28 random bytes.
 2. **Supported Ciphers:** Advertises the supported algorithms for encryption and hashing.
 3. **Extensions:** Adds optional features like server name indication, supported groups, and signature algorithms.
@@ -278,7 +238,7 @@ def send_server_hello(self)-> None:
         )
         self.send_to_client(server_hello, certificate, cert_request, TLSServerHelloDone())
 ```
-#### Explanation:
+ ***Explanation:***
 1. **Server Random:** Combines a timestamp and random bytes for key generation.
 2. **Selected Cipher:** Agrees upon one cipher suite from the client’s list.
 3. **Extensions:** Adds advanced security options like extended master secrets.
@@ -310,7 +270,7 @@ def send_client_key_exchange(self)-> None:
 
         self.send_to_server(client_certificate, client_key_exchange)
 ```
-#### Explanation:
+ ***Explanation:***
 1. **Client Certificate:** A TLS certificate representing the client is prepared and appended to the handshake messages.
 2. **Pre-Master Secret:** A randomly generated `pre-master secret` is created for the session.
 This value serves as the foundation for deriving the `master secret` used in subsequent encryption.
@@ -350,7 +310,7 @@ def handle_master_secret(self)-> None:
             self.server_random
         )
 ```
-#### Explanation:
+ ***Explanation:***
 1. **Client Side:**
    - The client encrypts the `pre_master_secret` using the server's public key from its certificate.
    - This ensures that only the server can decrypt it.
@@ -365,133 +325,107 @@ def handle_master_secret(self)-> None:
 
 ---
 
-### **Suggestions for Improvement**
-
-#### 1. **Logging Enhancements:**
-   - Add more logging to track potential issues during decryption and key derivation.
-   - For example:
-     ```python
-     logging.debug("Starting master secret calculation...")
-     logging.debug(f"Client Random: {self.client_random.hex()}")
-     logging.debug(f"Server Random: {self.server_random.hex()}")
-     ```
-
-#### 2. **Error Handling:**
-   - Introduce error handling to manage decryption failures or mismatches in the `pre_master_secret`.
-   - Example:
-     ```python
-     if not compare_to_original(decrypted_pre_master_secret, self.pre_master_secret):
-         raise ValueError("Decryption failed: pre_master_secret mismatch.")
-     ```
-
-#### 3. **Pseudo-Random Function (PRF):**
-   - Briefly explain how the PRF works in your README:
-     - Combines inputs (`pre_master_secret`, `client_random`, `server_random`) to produce output.
-     - Uses HMAC with a secure hash function (e.g., SHA-256).
-
-#### 4. **Diagrams and Visuals:**
-   - Consider adding a flowchart or sequence diagram showing the `master_secret` generation process. This can help readers grasp the concept visually.
-
-#### 5. **Key Security:**
-   - Highlight the importance of securely managing private keys and ensuring the integrity of transmitted data to avoid man-in-the-middle attacks.
-
----
-
----
 #### Client Change Cipher Spec
+
+- **Purpose:** During the handshake, the client sends the `ChangeCipherSpec` message to notify the server that it will use the negotiated encryption settings. This is immediately followed by the `Finished message`, encrypted with the new settings.
+- **Key Components:**
+  - **Pre-Master Secret Validation:** The server decrypts the pre-master secret sent by the client using its private key.
+Validates the decrypted secret matches the original to ensure data integrity.
+  - **Random Values:** Combines the `Client Random` and `Server Random` values generated during the handshake.
+  - **Pseudo-Random Function (PRF):** Derives the `Master Secret` using the pre-master secret and random values, ensuring it’s identical on both client and server sides.
+
 ```python
 def send_client_change_cipher_spec(self)-> None:
+
+        # Compute the client verify data for the Finished message
         client_verify_data = self.prf.compute_verify_data(
-            'client',
-            'write',
-            b''.join(self.handshake_messages),
-            self.master_secret
-        )
+                'client',
+                'write',
+                b''.join(self.handshake_messages),
+                self.master_secret
+            )
+
+        # Create TLSFinished and ChangeCipherSpec messages
         client_finished = TLSFinished(vdata=client_verify_data)
-        """sent by both the client and the
-            server to notify the receiving party that subsequent records will be
-            protected under the newly negotiated CipherSpec and keys."""
-        self.tls_context.msg = [TLSChangeCipherSpec()]
-        self.tls_context.msg = [client_finished]
-        self.send_tls_packet(self.client_ip, self.server_ip, self.client_port, self.server_port)
+        change_cipher_spec = TLSChangeCipherSpec()
+        self.send_to_server(client_finished)
+        self.send_to_server(change_cipher_spec)
 ```
-......
+ ***Explanation:***
+1. **Client Side:**
+   - The client encrypts the `pre_master_secret` using the server's public key from its certificate.
+   - This ensures that only the server can decrypt it.
+
+2. **Server Side:**
+   - The server decrypts the `pre_master_secret` using its private key.
+   - This step verifies that the client has a valid server certificate and ensures confidentiality.
+
+3. **Both Sides:**
+   - Using the same `pre_master_secret`, along with the `client_random` and `server_random`, both the client and server derive the same `master_secret`.
+   - This `master_secret` is the foundation for symmetric encryption keys used in the session.
+
+---
 #### Server Change Cipher Spec packet
 ```python
 def send_server_change_cipher_spec(self):
-        # Server Finished
-        server_verify_data = self.prf.compute_verify_data(
-            'server',
-            'write',
-            b''.join(self.handshake_messages),
-            self.master_secret
-        )
+        # Compute the server verify data for the Finished message
+            server_verify_data = self.prf.compute_verify_data(
+                'server',
+                'write',
+                b''.join(self.handshake_messages),
+                self.master_secret
+            )
 
-        decrypted_pre_master_secret = decrypt_pre_master_secret(self.encrypted_pre_master_secret, self.server_private_key)
-        
-        logging.info(f"Server decrypted pre_master_secret: {decrypted_pre_master_secret.hex()}")
+            # Decrypt pre-master secret for validation (optional)
+            decrypted_pre_master_secret = decrypt_pre_master_secret(
+                self.encrypted_pre_master_secret,
+                self.server_private_key
+            )
+            logging.debug(f"Decrypted pre-master secret: {decrypted_pre_master_secret.hex()}")
 
-        finished = TLSFinished(vdata=server_verify_data)
-        
-        self.tls_context.msg = [TLSChangeCipherSpec()]
-        self.tls_context.msg = [finished]
-        self.send_tls_packet(self.server_ip, self.client_ip, self.server_port, self.client_port)
-        logging.info(f"Server Finished sent to {self.client_ip}")
+            # Create TLSFinished and ChangeCipherSpec messages
+            server_finished = TLSFinished(vdata=server_verify_data)
+            change_cipher_spec = TLSChangeCipherSpec()
+
+            self.send_to_client(server_finished)
+            self.send_to_client(change_cipher_spec)
 ```
+ ***Explanation:***
+1. **Client Side:**
+   - The client encrypts the `pre_master_secret` using the server's public key from its certificate.
+   - This ensures that only the server can decrypt it.
+
+2. **Server Side:**
+   - The server decrypts the `pre_master_secret` using its private key.
+   - This step verifies that the client has a valid server certificate and ensures confidentiality.
+
+3. **Both Sides:**
+   - Using the same `pre_master_secret`, along with the `client_random` and `server_random`, both the client and server derive the same `master_secret`.
+   - This `master_secret` is the foundation for symmetric encryption keys used in the session.
+
+---
 
 #### Create SSLKeyLog File
 ```python
-def handle_ssl_key_log(self):
-        try:
-            # Log SSL key for Wireshark decryption
-            log_line = f"CLIENT_RANDOM {self.client_random.hex()} {self.master_secret.hex()}"
-            with open(self.pcap_writer.config.SSL_KEYLOG_FILE, "a") as f:
-                f.write(log_line + "\n")
-            logging.info(f"Logged master secret to {self.pcap_writer.config.SSL_KEYLOG_FILE}: {log_line}")
-        except Exception as e:
-            logging.error(f"Failed to derive master secret for decryption: {str(e)}")
-            raise e
-            
-        # check if the SSLKEYLOG's master secret is correct
-        if verify_master_secret(self.client_random, self.master_secret, self.pcap_writer.config.SSL_KEYLOG_FILE):
-            logging.info(f"Derived master_secret: {self.master_secret.hex()}")
-        else:
-            raise Exception("Master secret verification failed")
+
+def main():
+    # clear the SSL_KEYLOG_FILE
+    with open(config.SSL_KEYLOG_FILE, "w") as f:
+        pass
+
+def handle_ssl_key_log(self) -> None:
+        """Write keys in correct format for Wireshark"""
+        with open(self.pcap_writer.config.SSL_KEYLOG_FILE, "a") as f:
+            # Log master secret with client random
+            f.write(f"CLIENT_RANDOM {self.client_random.hex()} {self.master_secret.hex()}\n")
 ```
 #### Application Data Encryption
-Code for encrypting and decrypting application data using AES-128-CBC with HMAC-SHA256.
+Code for encrypting application data using AES-128-CBC with HMAC-SHA256.
 ```python
-def send_application_data(self, data, is_request):
-        is_client = is_request
-        key = self.client_write_key if is_client else self.server_write_key
-        mac_key = self.client_write_mac_key if is_client else self.server_write_mac_key
-        
-        iv = os.urandom(16)  # Generate a new IV for each message
-        
-        # Encrypt the data using CBC mode with HMAC-SHA256 for integrity
-        encrypted_data = encrypt_tls12_record_cbc(data, key, iv, mac_key)
-        self.encrypted_packets.append(encrypted_data)
-        self.original_messages.append(data)
-        
-        # שמור את המפתח וה-IV
-        self.packet_keys.append(key)
-        self.packet_ivs.append(iv)
-        self.packet_mac_keys.append(mac_key)
-        
-        # Create a TLS Application Data record
-        tls_data = TLSApplicationData(data=encrypted_data)
-        self.tls_context.msg = [tls_data]
-        
-        src_ip = self.client_ip if is_request else self.server_ip
-        dst_ip = self.server_ip if is_request else self.client_ip
-        sport = self.client_port if is_request else self.server_port
-        dport = self.server_port if is_request else self.client_port
-        
-        # Send the encrypted TLS packet
-        self.send_tls_packet(src_ip, dst_ip, sport, dport)
+
 ```
 ##### issue
-An issue is noted with SSL keylog decryption in Wireshark, and potential reasons are explored.
+An issue is noted with decryption the Application Data with `sslkeylog` in Wireshark, and potential reasons are explored.
 
 - I looked on the Wireshark Open Source for understand how they are implement the decryption.
 This trying worked a little bit......
@@ -515,64 +449,18 @@ The issue is not with: sslkeylog details, pre master secret, ............
 - .
 - .
 
-### Create Communication
+### SSL Communication Overview
+Translate to english: מקטע זה מתאר את הקוד עבור התקשורת בין שרת ל2 לקוחות.
+השרת ולקוח1 נתונים במשימת הCTF בתור קבצי EXE, אולם לקוח2 צריך להיכתב ע"י המשתתפים, בעזרת רמזים שהם אוספים בדרך.
 ```python
 
 ```
 
-#### Server File
-Explain:
-    1. Turn client certificate: If client connected without turn a certificate (as client1.exe), so tell him to use self signed cert.
-    2. Turn CSR: Additionly, added another verify, for be sure the client used a real cert he created by own, and not used a python script for that.
-```python
-def handle_client_request(ssl_socket):
-    try:
-        # Check for client certificate
-        cert = ssl_socket.getpeercert(binary_form=True)
-        if not cert:
-            print("No client certificate provided")
-            response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\n\r\n"
-            response += "Hint: Use a self-signed certificate (Country: IL, CN: Pasdaran.local) to access the resource."
-            ssl_socket.sendall(response.encode())
-            return False
-        
-        print("Client certificate received.")
-        
-        # Request CSR file
-        response = "HTTP/1.1 100 Continue\r\nContent-Type: text/plain\r\n\r\n"
-        response += "Please provide your CSR file for verification."
-        ssl_socket.sendall(response.encode())
-        print("Requested CSR file from client")
-        
-        # Wait for CSR file
-        csr_data = b""
-        while True:
-            chunk = ssl_socket.recv(4096)
-            if not chunk:
-                break
-            csr_data += chunk
-            if b"-----END CERTIFICATE REQUEST-----" in csr_data:
-                break
-        
-        csr_data = csr_data.decode()
-        print(f"Received CSR data (length: {len(csr_data)} bytes)")
-        
-        if verify_client_cert(cert, csr_data):
-            response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n"
-            response += "FLAG{This_Is_Your_Secret_Flag}"
-        else:
-            response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\n\r\n"
-            response += "Invalid certificate or CSR. Access denied."
-        
-        print(f"Sending response: {response}")
-        ssl_socket.sendall(response.encode())
-        print("Response sent successfully")
-        return True
-    except Exception as e:
-        print(f"Error handling client: {e}")
-        return False
-```
-Explain:
+#### Server Implementation
+Translate to English: השרת מתוכן לבצע TLS Handshake, ומצפה לקבל Client Certificate מהלקוח שמתקשר עמו.
+אם לקוח לא הטעין Client Certificate, אז הוא פועל באופן הבא:
+שולח encrypted response עם השגיאה שקרתה.
+שולח 400 bad request.
 
 ```python
 def server():
@@ -638,7 +526,9 @@ def server():
         print("Server has been shut down.")
 ```
 
-#### Client no-cert File
+#### Basic Client Handle
+
+![Communication between server and client1](api/communication-client1.png)
 ```python
 def main():
     # Initialize the socket
@@ -661,7 +551,14 @@ def main():
     my_socket.close()
 ```
 
-#### Client cert File
+Translate to English:
+מוריד קובץ למחשב של המשתתף במיקום קבוע מראש (C:\Users\<user_name>).
+לאחר תום ה30 שניות, הקובץ נמחק מהתיקייה.
+
+---
+
+#### Advanced Client Handle
+![Communication between server and client2](api/communication-client2.png)
 ```python
 def client():
     context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
@@ -683,14 +580,7 @@ def client():
             
             print(f"Received response of {len(response)} bytes")
 ```
-
-#### Protocol File
-```python
-MAX_MSG_LENGTH = 1024
-SERVER_PORT = 8110
-SERVER_IP = "0.0.0.0"
-ENCRYPTION_KEY = "RandomEncryptionKey123!@#"
-```
+הלקוח המתקדם, שולח לשרת Client Certificate שחתום ע"י הCA שהשרת סומך עליו.
 
 ### External Services Overview
 
@@ -716,6 +606,93 @@ Hint:
 Challenge:
 Can you find the encryption key hidden in the magic number? 
 It's not just 0xDEADBEEF - there's more to it!
+
+## Challenge Steps
+
+1. **File Extraction**  
+   - Begin with `mission.pdf`.  
+   - Extract the hidden files using steganography techniques:  
+     - `server.exe`  
+     - Corrupted `client.exe`.
+
+2. **Fixing the Client**  
+   - Run `server.exe` to retrieve the encryption key (a random character sequence).  
+   - Develop a Python script to decrypt `client.exe`.  
+   - Repair and make `client.exe` executable.
+
+3. **Communication Analysis**  
+   - Execute `server.exe` and `client.exe` simultaneously.  
+   - Examine `capture.pcapng` extracted from `mission.pdf`.  
+   - Identify the server's behavior: only clients with a valid certificate during the TLS Handshake can access the resource.
+
+4. **Creating a Second Client**  
+   - Develop `client2.exe` with unique attributes to avoid duplication issues.  
+   - Ensure `client2.exe` loads a certificate, unlike `client1`.  
+   - Enable both clients to connect concurrently without conflicts.
+
+5. **Generating a Self-Signed Certificate**  
+   - Create a self-signed certificate without relying on a Certificate Authority (CA).  
+   - Embed the certificate into `client2`'s code.  
+   - Confirm the server recognizes the certificate during the TLS Handshake.  
+   - Optionally set up a localhost domain for testing.  
+   - Prepare for the server’s potential requirement of DER-formatted certificates instead of CRT.
+
+6. **Certificate Request Signing (CRS) File Verification**  
+   - Load the CRS file into `client2` post-certificate loading.  
+   - Validate proper certificate creation steps to ensure integrity.  
+   - Block bypass attempts using scripts for fake certificates.
+
+7. **Retrieving the Flag**  
+   - Use `client2` to receive `resource.png` from the server.  
+   - Identify the embedded flag in the image.  
+   - Submit the flag to successfully complete the challenge.
+
+---
+
+## Participants Solution
+1. **File Extraction**  
+   - Begin with `mission.pdf`.  
+   - Extract the hidden files using steganography techniques:  
+     - `server.exe`  
+     - Corrupted `client.exe`.
+
+2. **Fixing the Client**  
+   - Run `server.exe` to retrieve the encryption key (a random character sequence).  
+   - Develop a Python script to decrypt `client.exe`.  
+   - Repair and make `client.exe` executable.
+
+3. **Communication Analysis**  
+   - Execute `server.exe` and `client.exe` simultaneously.  
+   - Examine `capture.pcapng` extracted from `mission.pdf`.  
+   - Identify the server's behavior: only clients with a valid certificate during the TLS Handshake can access the resource.
+
+4. **Creating a Second Client**  
+   - Develop `client2.exe` with unique attributes to avoid duplication issues.  
+   - Ensure `client2.exe` loads a certificate, unlike `client1`.  
+   - Enable both clients to connect concurrently without conflicts.
+
+5. **Generating a Self-Signed Certificate**  
+   - Create a self-signed certificate without relying on a Certificate Authority (CA).  
+   - Embed the certificate into `client2`'s code.  
+   - Confirm the server recognizes the certificate during the TLS Handshake.  
+   - Optionally set up a localhost domain for testing.  
+   - Prepare for the server’s potential requirement of DER-formatted certificates instead of CRT.
+
+6. **Certificate Request Signing (CRS) File Verification**  
+   - Load the CRS file into `client2` post-certificate loading.  
+   - Validate proper certificate creation steps to ensure integrity.  
+   - Block bypass attempts using scripts for fake certificates.
+
+7. **Retrieving the Flag**  
+   - Use `client2` to receive `resource.png` from the server.  
+   - Identify the embedded flag in the image.  
+   - Submit the flag to successfully complete the challenge.
+
+
+מתחיל ספירה לאחור של 30 שניות, בהם המשתתף צריך לגלות את מיקום הקובץ בעזרת התוכנה שנרמזה לו מראש בהוראות לCTF, בשם procmon.
+להלן תוצאות חיפוש בprocmon שבו רואים שהקובץ server.exe משתמש בהרשאת כתיבה לתיקייה C:\Users\ShayMordechai:
+![procmon results](api/from_procmon.png)
+
 
 ## External Tools
 
