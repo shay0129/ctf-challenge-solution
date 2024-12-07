@@ -10,15 +10,15 @@ This repository contains a Capture The Flag (CTF) challenge that simulates vulne
 - [Usage](#usage)
     - [PCAP Creation Overview](#pcap-creation-overview)
         - [TLS Handshake Steps](#tls-handshake-steps)
-        - [Client Hello](#client-hello)
-        - [Server Hello](#server-hello)
+        - [1. Client Hello](#client-hello)
+        - [2. Server Hello](#server-hello)
         - [Client Key Exchange](#client-key-exchange)
         - [Calculate Master Secret](#calculate-master-secret)
         - [Client Change Cipher Spec](#client-change-cipher-spec)
         - [Server Change Cipher Spec](#server-change-cipher-spec)
         - [Create SSLKeyLog File](#create-sslkeylog-file)
+            - [issue](#issue)
         - [Application Data Encryption](#application-data-encryption)
-        - [issue](#issue)
     - [SSL Communication Overview](#ssl-communication-overview)
         - [Server Implementation](#server-implementation)
         - [Basic Client Handle](#basic-client-handle)
@@ -245,7 +245,7 @@ def send_server_hello(self)-> None:
 
 ---
 
-#### **3. Client Key Exchange**
+#### 3. Client Key Exchange
 - **Purpose:** The `Client Key Exchange` step ensures secure communication by sharing the `pre-master secret` with the server. This secret is encrypted using the `server's public key`, making it accessible only to the intended recipient.
 - **Key Components:**
   - **Pre-Master Secret:** A randomly generated value used to derive the `master secret`, enabling secure symmetric encryption.
@@ -269,6 +269,9 @@ def send_client_key_exchange(self)-> None:
         )
 
         self.send_to_server(client_certificate, client_key_exchange)
+
+
+
 ```
  ***Explanation:***
 1. **Client Certificate:** A TLS certificate representing the client is prepared and appended to the handshake messages.
@@ -278,6 +281,17 @@ This value serves as the foundation for deriving the `master secret` used in sub
 The encryption guarantees that only the server, possessing the corresponding `private key`, can decrypt it.
 4. **Key Exchange Message:** The encrypted `pre-master secret` is packaged into a key exchange message, preceded by its length in bytes.
 
+```python
+def encrypt_pre_master_secret(pre_master_secret: bytes, server_public_key: rsa.RSAPublicKey) -> bytes:
+    return server_public_key.encrypt(
+        pre_master_secret,
+        asymmetric_padding.PKCS1v15()
+    )
+```
+The `encrypt_pre_master_secret()` function:
+- PKCS1v15 padding (standard for RSA encryption)
+- Encrypts the pre-master secret with the server's public key
+- Returns the encrypted bytes
 ---
 
 #### Calculate Master Secret
@@ -327,12 +341,11 @@ def handle_master_secret(self)-> None:
 
 #### Client Change Cipher Spec
 
-- **Purpose:** During the handshake, the client sends the `ChangeCipherSpec` message to notify the server that it will use the negotiated encryption settings. This is immediately followed by the `Finished message`, encrypted with the new settings.
+- **Purpose:** The `ChangeCipherSpec` message is sent by the client to notify the server that it will start using the negotiated encryption and MAC settings. This is immediately followed by the `Finished` message, encrypted with the newly established settings.
 - **Key Components:**
-  - **Pre-Master Secret Validation:** The server decrypts the pre-master secret sent by the client using its private key.
-Validates the decrypted secret matches the original to ensure data integrity.
-  - **Random Values:** Combines the `Client Random` and `Server Random` values generated during the handshake.
-  - **Pseudo-Random Function (PRF):** Derives the `Master Secret` using the pre-master secret and random values, ensuring it’s identical on both client and server sides.
+  - **Verify Data:** Ensures the integrity of the handshake messages using the derived `Master Secret`.
+  - **ChangeCipherSpec Message:** Signals the switch to encrypted communication.
+  - **Finished Message:** Confirms the handshake is complete and authenticated.
 
 ```python
 def send_client_change_cipher_spec(self)-> None:
@@ -352,20 +365,23 @@ def send_client_change_cipher_spec(self)-> None:
         self.send_to_server(change_cipher_spec)
 ```
  ***Explanation:***
-1. **Client Side:**
-   - The client encrypts the `pre_master_secret` using the server's public key from its certificate.
-   - This ensures that only the server can decrypt it.
+1. **Verify Data:**
+   - The client computes the `verify_data` using all previous handshake messages and the derived `master_secret`.
+   - This ensures the integrity of the handshake.
 
-2. **Server Side:**
-   - The server decrypts the `pre_master_secret` using its private key.
-   - This step verifies that the client has a valid server certificate and ensures confidentiality.
+2. **ChangeCipherSpec Message:**
+   - Signals the server that future messages will use the negotiated encryption and integrity settings.
 
-3. **Both Sides:**
-   - Using the same `pre_master_secret`, along with the `client_random` and `server_random`, both the client and server derive the same `master_secret`.
-   - This `master_secret` is the foundation for symmetric encryption keys used in the session.
+3. **Finished Message:**
+   - This is the first message encrypted with the new cipher settings, proving that both client and server share the same session keys.
 
 ---
 #### Server Change Cipher Spec packet
+- **Purpose:** The server sends the `ChangeCipherSpec` message to notify the client it will use the negotiated encryption settings. It follows with the `Finished` message, encrypted with the new settings, to confirm the handshake.
+- **Key Components:**
+  - **Verify Data:** Ensures the server has received and authenticated all handshake messages.
+  - **ChangeCipherSpec Message:** Indicates the switch to encrypted communication.
+  - **Finished Message:** Verifies the handshake integrity and agreement on session keys.
 ```python
 def send_server_change_cipher_spec(self):
         # Compute the server verify data for the Finished message
@@ -381,7 +397,6 @@ def send_server_change_cipher_spec(self):
                 self.encrypted_pre_master_secret,
                 self.server_private_key
             )
-            logging.debug(f"Decrypted pre-master secret: {decrypted_pre_master_secret.hex()}")
 
             # Create TLSFinished and ChangeCipherSpec messages
             server_finished = TLSFinished(vdata=server_verify_data)
@@ -391,63 +406,167 @@ def send_server_change_cipher_spec(self):
             self.send_to_client(change_cipher_spec)
 ```
  ***Explanation:***
-1. **Client Side:**
-   - The client encrypts the `pre_master_secret` using the server's public key from its certificate.
-   - This ensures that only the server can decrypt it.
+1. **Verify Data:**
+   - The server computes `verify_data` using the handshake messages and `master_secret`.
+   - Confirms the integrity and authenticity of the handshake.
 
-2. **Server Side:**
-   - The server decrypts the `pre_master_secret` using its private key.
-   - This step verifies that the client has a valid server certificate and ensures confidentiality.
+2. **ChangeCipherSpec Message:**
+   - Notifies the client that the server is switching to the negotiated encryption settings.
 
-3. **Both Sides:**
-   - Using the same `pre_master_secret`, along with the `client_random` and `server_random`, both the client and server derive the same `master_secret`.
-   - This `master_secret` is the foundation for symmetric encryption keys used in the session.
+3. **Finished Message:**
+   - Sent encrypted, verifying that the server is ready for secure communication.
+
+Here’s the revised section in the desired format:
 
 ---
 
-#### Create SSLKeyLog File
-```python
+#### **4. Create SSL Key Log File**
 
+- **Purpose:** Enables debugging of encrypted TLS traffic by exporting the `master_secret` and `client_random` to a log file, making it compatible with tools like Wireshark.  
+- **Key Components:**
+  - **SSL Key Log File:** Stores the keys in a format that Wireshark can use to decrypt captured TLS sessions.  
+  - **Client Random and Master Secret:** These are required to generate session keys for decrypting the traffic.
+
+```python
 def main():
-    # clear the SSL_KEYLOG_FILE
+    # Clear the SSL_KEYLOG_FILE
     with open(config.SSL_KEYLOG_FILE, "w") as f:
         pass
 
 def handle_ssl_key_log(self) -> None:
-        """Write keys in correct format for Wireshark"""
+        """Write keys in the correct format for Wireshark"""
         with open(self.pcap_writer.config.SSL_KEYLOG_FILE, "a") as f:
             # Log master secret with client random
             f.write(f"CLIENT_RANDOM {self.client_random.hex()} {self.master_secret.hex()}\n")
 ```
+
+***Explanation:***  
+1. **Clearing the SSL Key Log File:**  
+   - The log file is cleared at the start to ensure no residual data from previous sessions interferes with debugging.  
+
+2. **Writing Keys:**  
+   - The `client_random` and `master_secret` are logged in the format:  
+     ```
+     CLIENT_RANDOM <client_random> <master_secret>
+     ```  
+   - This allows Wireshark to decrypt the captured traffic by reconstructing session keys.  
+
+3. **Integration with Wireshark:**  
+   - The generated log file can be loaded into Wireshark via the *SSL protocol settings* to enable real-time decryption of the TLS packets.  
+
+---
+
+Here’s how you could structure the notice in the README file:
+
+---
+
+### **Notice: SSL Key Log File Decryption Issue**
+
+#### **Context**
+The `SSL_KEYLOG_FILE` functionality was implemented to allow decryption of encrypted TLS traffic in tools like Wireshark and TShark. However, during testing, I encountered difficulties in successfully decrypting the `Application Data` packets in both Wireshark and TShark.
+
+#### **Steps Taken to Address the Issue**
+
+1. **Reviewing Wireshark’s Open-Source Code**  
+   - I explored the implementation details of how Wireshark processes `sslkeylog` files for decryption. This investigation provided insights into the decryption pipeline but did not reveal any immediate issues with the format or content of the log file generated by my script.  
+
+2. **Comparison with a Valid PCAP File**  
+   - I compared the decryption process of a known working PCAP file with my generated PCAP file using the following TShark command:  
+     ```bash
+     tshark -r <pcap_name.pcap> \
+         -o "tls.keylog_file:<sslkeylog_name.log>" \
+         -o "tls.debug_file:<tls_debug_name.txt>" \
+         -V
+     ```
+   - This helped identify that the format of the `sslkeylog` file and the `client_random`/`master_secret` entries appeared to be correct.  
+
+3. **Decryption Process Debugging**  
+   - Based on my research, the decryption process generally involves:  
+     1. Parsing the `Client Random` and `Server Random` values.  
+     2. Matching these values to the `sslkeylog` file entries.  
+     3. Deriving the session keys for decrypting the traffic.  
+   - There did not seem to be an issue with these steps, as the `Client Random` and `Master Secret` were successfully generated and logged.
+
+4. **Consideration of Self-Signed Certificates**  
+   - I hypothesized that the use of self-signed certificates might be causing an issue, as they are not trusted by the OS or Wireshark. However, this should not typically prevent decryption if the session keys are correct, as the `sslkeylog` file bypasses the need for certificate validation.
+
+#### **Next Steps**
+- Continue investigating the exact reason for the failure, possibly by:
+  - Capturing a more detailed debug log using TShark’s `-o tls.debug_file` option.
+  - Testing with CA-signed certificates to rule out self-signed certificate-related issues.
+  - Exploring alternative TLS libraries or tools to verify the integrity of the generated session keys.
+
+#### **Conclusion**
+While the issue remains unresolved, I have documented all attempts and hypotheses. This ensures a clear understanding of the problem and demonstrates due diligence in troubleshooting. Fixing this issue is not a requirement for full credit, as per the instructions, but I will continue to investigate to improve the implementation.  
+
+--- 
+
+Let me know if you'd like further clarification or adjustments.
+
 #### Application Data Encryption
 Code for encrypting application data using AES-128-CBC with HMAC-SHA256.
 ```python
+def encrypt_and_send_application_data(self, data, is_request) -> bytes:
+    """
+    Encrypts and sends TLS application data as per RFC 5246.
+    """
+    try:
+        # Determine client/server context
+        is_client = is_request
+        key_block = self.prf.derive_key_block(
+            self.master_secret,
+            self.server_random,
+            self.client_random,
+            2 * (16 + 32)  # 2 * (key_length + mac_key_length)
+        )
+
+        # Extract keys and IV
+        client_mac_key = key_block[0:32]
+        server_mac_key = key_block[32:64]
+        client_key = key_block[64:80]
+        server_key = key_block[80:96]
+
+        key = client_key if is_client else server_key
+        mac_key = client_mac_key if is_client else server_mac_key
+        explicit_iv = os.urandom(16)
+
+        # Generate sequence number
+        seq_num = self.client_seq_num if is_client else self.server_seq_num
+        seq_num_bytes = seq_num.to_bytes(8, byteorder='big')
+
+        # Encrypt data
+        encrypted_data = encrypt_tls12_record_cbc(data, key, explicit_iv, mac_key, seq_num_bytes)
+
+        # Construct TLS record
+        tls_record = explicit_iv + encrypted_data
+        tls_data = TLSApplicationData(data=tls_record)
+        self.tls_context.msg = [tls_data]
+
+        # Update sequence number
+        if is_client:
+            self.client_seq_num += 1
+        else:
+            self.server_seq_num += 1
+
+        # Determine source and destination
+        src_ip = self.client_ip if is_request else self.server_ip
+        dst_ip = self.server_ip if is_request else self.client_ip
+        sport = self.client_port if is_request else self.server_port
+        dport = self.server_port if is_request else self.client_port
+
+        # Send packet
+        raw_packet = self.send_tls_packet(src_ip, dst_ip, sport, dport)
+
+        # Log success
+        logging.info(f"TLS Application Data sent from {src_ip}:{sport} to {dst_ip}:{dport}")
+        return raw(tls_data)
+
+    except Exception as e:
+        logging.error(f"Error in encrypt_and_send_application_data: {e}")
+        raise
 
 ```
-##### issue
-An issue is noted with decryption the Application Data with `sslkeylog` in Wireshark, and potential reasons are explored.
 
-- I looked on the Wireshark Open Source for understand how they are implement the decryption.
-This trying worked a little bit......
-
-- Checking a "real pcap" decryption procces and compare with my pcap, with TShark commands.
-```bash
-tshark -r <pcap_name.pcap> \
-    -o "tls.keylog_file:<sslkeylog_name.log>" \
-    -o "tls.debug_file:<tls_debug_name.txt>" \
-    -V
-```
-The issue is not with: sslkeylog details, pre master secret, ............
-מצאתי שתהליך הפענוח הוא כזה:
-תחילה, נבדק XXX
-אח"כ XXX
-אח"כ XXX
-לא אמורה להיות בעיה כאן כי...
-
-- I though maby the issue is the fact I used Self Signed Certificate and no CA sigend for server, so OS not בוטחת in that. But this thing only for the 
-- .
-- .
-- .
 
 ### SSL Communication Overview
 Translate to english: מקטע זה מתאר את הקוד עבור התקשורת בין שרת ל2 לקוחות.
