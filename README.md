@@ -78,7 +78,6 @@ This challenge develops a broad range of technical skills, including:
 
 ## Usage
 
-Your explanation and structure for the **PCAP Creation** process, along with the associated **UnifiedTLSSession** class, is excellent! Here's a refined breakdown and some additional enhancements you might consider:
 
 ---
 
@@ -199,7 +198,7 @@ def send_client_hello(self)-> None:
 ---
 
 #### **Server Hello**
-**Purpose**: Responds to the `Client Hello` by selecting encryption parameters (`cipher`) and generating the `server’s random bytes`.
+**Purpose**: Responds to the `Client Hello` by  server `random` bytes`selected cipher` (encryption parameters) and `extenstions`.
 ```python
 def send_server_hello(self)-> None:      
         # Generate a Server Random
@@ -236,6 +235,7 @@ def send_server_hello(self)-> None:
 2. **Selected Cipher:** Agrees upon one cipher suite from the client’s list.
 3. **Extensions:** Adds advanced security options like extended master secrets.
 
+![server certificate signed by ca](api/signed_server_cert.png)
 ---
 
 #### Client Key Exchange
@@ -333,7 +333,7 @@ def handle_master_secret(self)-> None:
 
 #### Client Change Cipher Spec
 
-- **Purpose:** The `ChangeCipherSpec` message is sent by the client to notify the server that it will start using the negotiated encryption and MAC settings. This is immediately followed by the `Finished` message, encrypted with the newly established settings.
+**Purpose:** The `ChangeCipherSpec` message is sent by the client to notify the server that it will start using the negotiated encryption and MAC settings. This is immediately followed by the `Finished` message, encrypted with the newly established settings.
 
 ```python
 def send_client_change_cipher_spec(self)-> None:
@@ -893,20 +893,33 @@ openssl genpkey \
 -out server.key \
 -pkeyopt rsa_keygen_bits:2048
 ```
+יצירת CA
+```bash
+openssl req -x509 -new -nodes \
+    -key ca.key \
+    -sha256 \
+    -days 3650 \
+    -out ca.crt \
+    -subj "/C=IR/ST=Tehran/L=Tehran/O=IRGC/OU=Cybersecurity/CN=IRGC Root CA"
+```
+
 create csr:
 ```bash
 openssl req \
 -new -key server.key \
 -out server.csr \
--subj "/C=IR/ST=xxx/L=xxx/O=xxx/OU=xxx/CN=xxx"
+-subj "/C=IR/ST=Tehran/L=Tehran/O=Pasdaran/OU=Security/CN=www.ctf-example.org"
 ```
 חתימה ע"י OpenSSL
 ```bash
 openssl x509 \
--req -days 365 \
--in server.csr \
--signkey server.key \
--out server.crt
+-req -in server.csr \
+-CA ca.crt \
+-CAkey ca.key \
+-CAcreateserial \
+-out server.crt \
+-days 365 \
+-sha256
 ```
 המרה לder
 ```bash
