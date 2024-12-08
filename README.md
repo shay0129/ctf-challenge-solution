@@ -1,4 +1,4 @@
-# CTF Challenge: TLS Vulnerable Server and Client Analysis
+# CTF Challenge: TLS Handshake and Encryption Algorithms
 
 ## **Introduction**
 This repository contains a Capture The Flag (CTF) challenge that simulates vulnerabilities in TLS communication. Participants will analyze traffic, fix clients, and create secure communications using cryptography, reverse engineering, and network analysis tools.
@@ -10,8 +10,8 @@ This repository contains a Capture The Flag (CTF) challenge that simulates vulne
 - [Usage](#usage)
     - [PCAP Creation Overview](#pcap-creation-overview)
         - [TLS Handshake Steps](#tls-handshake-steps)
-        - [1. Client Hello](#client-hello)
-        - [2. Server Hello](#server-hello)
+        - [Client Hello](#client-hello)
+        - [Server Hello](#server-hello)
         - [Client Key Exchange](#client-key-exchange)
         - [Calculate Master Secret](#calculate-master-secret)
         - [Client Change Cipher Spec](#client-change-cipher-spec)
@@ -83,8 +83,7 @@ Your explanation and structure for the **PCAP Creation** process, along with the
 ---
 
 ### **PCAP Creation Overview**
-
-![PCAP Screenshot](image-2.png)
+![PCAP Screenshot](api/pcap_screenshot.png)
 
 The **UnifiedTLSSession** class facilitates the simulation of a TLS session between a client and a server, enabling the creation of PCAP files.
 Core Features:
@@ -170,11 +169,8 @@ def perform_handshake(self)-> None:
         self.handle_ssl_key_log()
 ```
 ---
-#### **1. Client Hello**
-- **Purpose:** Initiates the handshake by sending the supported ciphers, extensions, and random bytes.
-- **Key Components:**
-  - **Client Random:** Combines current time (`GMT Unix time`) and random bytes for session identification.
-  - **Supported Ciphers:** Lists encryption algorithms supported by the client.
+#### **Client Hello**
+**Purpose**: The client Initiates the handshake by sending the supported `ciphers`, `extensions`, and `random` bytes.
 ```python
 def send_client_hello(self)-> None:
         self.client_GMT_unix_time, self.client_random_bytes = generate_random()
@@ -202,11 +198,8 @@ def send_client_hello(self)-> None:
 
 ---
 
-#### **2. Server Hello**
-- **Purpose:** Responds to the `Client Hello` by selecting encryption parameters and generating the `server’s random` bytes.
-- **Key Components:**
-  - **Server Random:** Similar to the client random, used in key generation.
-  - **Session ID:** Unique identifier for the session.
+#### **Server Hello**
+**Purpose**: Responds to the `Client Hello` by selecting encryption parameters (`cipher`) and generating the `server’s random bytes`.
 ```python
 def send_server_hello(self)-> None:      
         # Generate a Server Random
@@ -245,11 +238,9 @@ def send_server_hello(self)-> None:
 
 ---
 
-#### 3. Client Key Exchange
-- **Purpose:** The `Client Key Exchange` step ensures secure communication by sharing the `pre-master secret` with the server. This secret is encrypted using the `server's public key`, making it accessible only to the intended recipient.
-- **Key Components:**
-  - **Pre-Master Secret:** A randomly generated value used to derive the `master secret`, enabling secure symmetric encryption.
-  - **Encrypted Pre-Master Secret:** Protects the pre-master secret during transit, ensuring that only the server can decrypt it.
+#### Client Key Exchange
+**Purpose**: The client generates a `Pre-Master Secret`, encrypts it, and sends it to the server.
+This secret is encrypted using the server's `public key`, making it accessible only to the intended recipient.
 ```python
 def send_client_key_exchange(self)-> None:
 
@@ -281,6 +272,11 @@ This value serves as the foundation for deriving the `master secret` used in sub
 The encryption guarantees that only the server, possessing the corresponding `private key`, can decrypt it.
 4. **Key Exchange Message:** The encrypted `pre-master secret` is packaged into a key exchange message, preceded by its length in bytes.
 
+Notice:
+ב-TLS 1.2, כאשר משתמשים ב-RSA Key Exchange, לא נשלחת הודעת ServerKeyExchange.
+תהליך ה-Handshake מבוסס על הצפנה של Pre-Master Secret עם המפתח הציבורי של השרת, ולכן אין צורך בחתימה נוספת מצד השרת כדי לוודא את הזהות שלו.
+לעומת זאת, במקרים של Diffie-Hellman (DH) או Elliptic Curve Diffie-Hellman (ECDH), כן נדרשת הודעת ServerKeyExchange.
+
 ```python
 def encrypt_pre_master_secret(pre_master_secret: bytes, server_public_key: rsa.RSAPublicKey) -> bytes:
     return server_public_key.encrypt(
@@ -295,12 +291,8 @@ The `encrypt_pre_master_secret()` function:
 ---
 
 #### Calculate Master Secret
-- **Purpose:** The `master secret` is a crucial part of the TLS handshake, derived by both the client and server using the `pre-master secret` and `random` values exchanged during the handshake. It ensures the secure generation of session keys for encryption and integrity checks.
-- **Key Components:**
-  - **Pre-Master Secret Validation:** The server decrypts the pre-master secret sent by the client using its private key.
-Validates the decrypted secret matches the original to ensure data integrity.
-  - **Random Values:** Combines the `Client Random` and `Server Random` values generated during the handshake.
-  - **Pseudo-Random Function (PRF):** Derives the `Master Secret` using the pre-master secret and random values, ensuring it’s identical on both client and server sides.
+**Purpose:** The `master secret` is a crucial part of the TLS handshake, derived by both the client and server using the `pre-master secret` and `random` values exchanged during the handshake. It ensures the secure generation of session keys for encryption and integrity checks.
+
 
 ```python
 def handle_master_secret(self)-> None:
@@ -342,10 +334,6 @@ def handle_master_secret(self)-> None:
 #### Client Change Cipher Spec
 
 - **Purpose:** The `ChangeCipherSpec` message is sent by the client to notify the server that it will start using the negotiated encryption and MAC settings. This is immediately followed by the `Finished` message, encrypted with the newly established settings.
-- **Key Components:**
-  - **Verify Data:** Ensures the integrity of the handshake messages using the derived `Master Secret`.
-  - **ChangeCipherSpec Message:** Signals the switch to encrypted communication.
-  - **Finished Message:** Confirms the handshake is complete and authenticated.
 
 ```python
 def send_client_change_cipher_spec(self)-> None:
@@ -376,12 +364,9 @@ def send_client_change_cipher_spec(self)-> None:
    - This is the first message encrypted with the new cipher settings, proving that both client and server share the same session keys.
 
 ---
-#### Server Change Cipher Spec packet
+#### Server Change Cipher Spec
 - **Purpose:** The server sends the `ChangeCipherSpec` message to notify the client it will use the negotiated encryption settings. It follows with the `Finished` message, encrypted with the new settings, to confirm the handshake.
-- **Key Components:**
-  - **Verify Data:** Ensures the server has received and authenticated all handshake messages.
-  - **ChangeCipherSpec Message:** Indicates the switch to encrypted communication.
-  - **Finished Message:** Verifies the handshake integrity and agreement on session keys.
+
 ```python
 def send_server_change_cipher_spec(self):
         # Compute the server verify data for the Finished message
@@ -420,12 +405,9 @@ Here’s the revised section in the desired format:
 
 ---
 
-#### **4. Create SSL Key Log File**
+#### **Create SSLKeyLog File**
 
 - **Purpose:** Enables debugging of encrypted TLS traffic by exporting the `master_secret` and `client_random` to a log file, making it compatible with tools like Wireshark.  
-- **Key Components:**
-  - **SSL Key Log File:** Stores the keys in a format that Wireshark can use to decrypt captured TLS sessions.  
-  - **Client Random and Master Secret:** These are required to generate session keys for decrypting the traffic.
 
 ```python
 def main():
@@ -454,9 +436,9 @@ def handle_ssl_key_log(self) -> None:
 3. **Integration with Wireshark:**  
    - The generated log file can be loaded into Wireshark via the *SSL protocol settings* to enable real-time decryption of the TLS packets.  
 
----
-
-Here’s how you could structure the notice in the README file:
+גזירת ה-master secret  כוללת שימוש בנתונים אקראיים (nonces) שנוצרו על ידי הלקוח והשרת. זה מונע שימוש חוזר ב-master secret  ב sessions שונים, גם אם ה-pre-master secret  נשאר זהה.
+בקובץ זה קיים session יחיד לכל לקוח.
+אילו היו עוד sessions לכל לקוח, היו מספר של master secret לכל לקוח.
 
 ---
 
@@ -813,6 +795,56 @@ It's not just 0xDEADBEEF - there's more to it!
 ![procmon results](api/from_procmon.png)
 
 
+
+
+## הנחיות למשתתף (ליצירת תעודת לקוח)
+הנה המדריך למערכת האישורים:
+
+1. הכנת ה-CA:
+```bash
+# יצירת מפתח CA
+openssl genrsa -out guards.key 2048
+
+# יצירת תעודת CA
+openssl req -x509 -new -nodes -key guards.key -sha256 -days 3650 -out guards.crt \
+-subj "/CN=CTF CA/C=IL"
+```
+
+2. קוד השרת יטען את ה-CA:
+```python
+context.load_verify_locations(cafile="guards.crt")
+```
+
+3. הוראות למשתתפים:
+```bash
+# יצירת מפתח פרטי
+openssl genrsa -out client.key 2048
+
+# יצירת בקשת חתימה (CSR)
+openssl req -new -key client.key -out client.csr \
+-subj "/CN=Pasdaran.local/C=IL"
+
+# חתימת התעודה עם ה-CA
+openssl x509 -req -in client.csr -CA guards.crt -CAkey guards.key \
+-CAcreateserial -out client.crt -days 365
+```
+
+כך המשתתפים יוכלו ליצור תעודות חתומות על ידי ה-CA שלך.
+
+סדר הפעולות:
+
+לקוח שולח client.crt לשרת
+שרת בודק אם התעודה חתומה על ידי ca.crt שהוא מכיר
+אם כן, השרת בודק את התכונות של התעודה ב-verify_client_cert
+
+
+# Install pyinstaller:
+pip install pyinstaller
+
+# Create EXEs:
+pyinstaller --onefile server.py
+pyinstaller --onefile basic_client.py
+
 ## External Tools
 
 used:
@@ -901,51 +933,3 @@ Feel free to contribute to the project by opening issues or pull requests.
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-
-## הנחיות למשתתף (ליצירת תעודת לקוח)
-הנה המדריך למערכת האישורים:
-
-1. הכנת ה-CA:
-```bash
-# יצירת מפתח CA
-openssl genrsa -out guards.key 2048
-
-# יצירת תעודת CA
-openssl req -x509 -new -nodes -key guards.key -sha256 -days 3650 -out guards.crt \
--subj "/CN=CTF CA/C=IL"
-```
-
-2. קוד השרת יטען את ה-CA:
-```python
-context.load_verify_locations(cafile="guards.crt")
-```
-
-3. הוראות למשתתפים:
-```bash
-# יצירת מפתח פרטי
-openssl genrsa -out client.key 2048
-
-# יצירת בקשת חתימה (CSR)
-openssl req -new -key client.key -out client.csr \
--subj "/CN=Pasdaran.local/C=IL"
-
-# חתימת התעודה עם ה-CA
-openssl x509 -req -in client.csr -CA guards.crt -CAkey guards.key \
--CAcreateserial -out client.crt -days 365
-```
-
-כך המשתתפים יוכלו ליצור תעודות חתומות על ידי ה-CA שלך.
-
-סדר הפעולות:
-
-לקוח שולח client.crt לשרת
-שרת בודק אם התעודה חתומה על ידי ca.crt שהוא מכיר
-אם כן, השרת בודק את התכונות של התעודה ב-verify_client_cert
-
-
-# Install pyinstaller:
-pip install pyinstaller
-
-# Create EXEs:
-pyinstaller --onefile server.py
-pyinstaller --onefile basic_client.py
