@@ -1,17 +1,17 @@
-# requirements.txt - pip install -r requirements.txt
-cryptography -v 3.4.6
-sslkeylog
-scapy==2.4.5
-nuitka
+pycryptodome==3.21.0
 
+scapy==2.5.0
+
+os
+typing
+time
+secrets
+hashlib
+hmac
+logging
+random
 socket
 ssl
-time
-select
-signal
-logging
-os
-datetime
-hmac
-base64
-secrets
+
+cryptography==3.3.2
+pyOpenSSL==23.2.0

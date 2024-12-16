@@ -2,7 +2,9 @@
 
 ## **Introduction**
 This repository contains a Capture The Flag (CTF) challenge that simulates vulnerabilities in TLS communication. Participants will analyze traffic, fix clients, and create secure communications using cryptography, reverse engineering, and network analysis tools.
-![CTF Diagram](api/ctf-diagram.png)
+![CTF Diagram](documents/ctf-diagram.png)
+
+pip install -r requirements.txt
 
 ## Table of Contents
 - [Challenge Description](#challenge-description)
@@ -20,8 +22,9 @@ This repository contains a Capture The Flag (CTF) challenge that simulates vulne
             - [issue](#issue)
         - [Application Data Encryption](#application-data-encryption)
     - [SSL Communication Overview](#ssl-communication-overview)
-        - [Server Implementation](#server-implementation)
-        - [Basic Client Handle](#basic-client-handle)
+        - [CA Server](#ca-server)
+        - [CSR Client](#csr-client)
+        - [Server](#server)
         - [Advanced Client Handle](#advanced-client-handle)
     - [External Services Overview](#external-services-overview)
         - [PE stole](#pe-stole)
@@ -82,7 +85,7 @@ This challenge develops a broad range of technical skills, including:
 ---
 
 ### **PCAP Creation Overview**
-![PCAP Screenshot](api/pcap_screenshot.png)
+![PCAP Screenshot](documents/pcap_screenshot.png)
 
 The **UnifiedTLSSession** class facilitates the simulation of a TLS session between a client and a server, enabling the creation of PCAP files.
 Core Features:
@@ -235,7 +238,7 @@ def send_server_hello(self)-> None:
 2. **Selected Cipher:** Agrees upon one cipher suite from the client’s list.
 3. **Extensions:** Adds advanced security options like extended master secrets.
 
-![server certificate signed by ca](api/signed_server_cert.png)
+![server certificate signed by ca](documents/signed_server_cert.png)
 ---
 
 #### Client Key Exchange
@@ -551,11 +554,11 @@ def encrypt_and_send_application_data(self, data, is_request) -> bytes:
 
 
 ### SSL Communication Overview
-Translate to english: מקטע זה מתאר את הקוד עבור התקשורת בין שרת ל2 לקוחות.
-השרת ולקוח1 נתונים במשימת הCTF בתור קבצי EXE, אולם לקוח2 צריך להיכתב ע"י המשתתפים, בעזרת רמזים שהם אוספים בדרך.
-```python
+שרת CA ולקוח.
+שרת רגיל ולקוח.
 
-```
+הלקוח תחילה מבקש מCA שיחתום לו על client csr.
+הCA חותם ושולח בחזרה crt file חתום.
 
 #### Server Implementation
 Translate to English: השרת מתוכן לבצע TLS Handshake, ומצפה לקבל Client Certificate מהלקוח שמתקשר עמו.
@@ -629,7 +632,7 @@ def server():
 
 #### Basic Client Handle
 
-![Communication between server and client1](api/communication-client1.png)
+![Communication between server and client1](documents/communication-client1.png)
 ```python
 def main():
     # Initialize the socket
@@ -659,7 +662,7 @@ Translate to English:
 ---
 
 #### Advanced Client Handle
-![Communication between server and client2](api/communication-client2.png)
+![Communication between server and client2](documents/communication-client2.png)
 ```python
 def client():
     context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
@@ -710,92 +713,79 @@ It's not just 0xDEADBEEF - there's more to it!
 
 ## Challenge Steps
 
-1. **File Extraction**  
-   - Begin with `mission.pdf`.  
-   - Extract the hidden files using steganography techniques:  
-     - `server.exe`  
-     - Corrupted `client.exe`.
 
-2. **Fixing the Client**  
-   - Run `server.exe` to retrieve the encryption key (a random character sequence).  
-   - Develop a Python script to decrypt `client.exe`.  
-   - Repair and make `client.exe` executable.
+## אתגר CTF: חדירה לרשת מאובטחת
 
-3. **Communication Analysis**  
-   - Execute `server.exe` and `client.exe` simultaneously.  
-   - Examine `capture.pcapng` extracted from `mission.pdf`.  
-   - Identify the server's behavior: only clients with a valid certificate during the TLS Handshake can access the resource.
+**תיאור:**
 
-4. **Creating a Second Client**  
-   - Develop `client2.exe` with unique attributes to avoid duplication issues.  
-   - Ensure `client2.exe` loads a certificate, unlike `client1`.  
-   - Enable both clients to connect concurrently without conflicts.
+אתגר זה ידרוש ממך לחדור לרשת מאובטחת על ידי ניצול חולשות בפרוטוקול TLS ופתרון צופן אניגמה. 
 
-5. **Generating a Self-Signed Certificate**  
-   - Create a self-signed certificate without relying on a Certificate Authority (CA).  
-   - Embed the certificate into `client2`'s code.  
-   - Confirm the server recognizes the certificate during the TLS Handshake.  
-   - Optionally set up a localhost domain for testing.  
-   - Prepare for the server’s potential requirement of DER-formatted certificates instead of CRT.
+**צעדים:**
 
-6. **Certificate Request Signing (CRS) File Verification**  
-   - Load the CRS file into `client2` post-certificate loading.  
-   - Validate proper certificate creation steps to ensure integrity.  
-   - Block bypass attempts using scripts for fake certificates.
+1. **ניתוח ראשוני:**
+    * תקבל קובץ PDF עם תיאור המשימה וקובץ PCAP המכיל תעבורה רשת מוצפנת.
+    * בתוך קובץ ה-PCAP, תמצא שני קבצים: `server.exe` ו- `client.exe`.
+    * באמצעות ניתוח נוסף, תגלה שני קבצים נוספים: `ca_server.exe` ו- `csr_client.exe`.
 
-7. **Retrieving the Flag**  
-   - Use `client2` to receive `resource.png` from the server.  
-   - Identify the embedded flag in the image.  
-   - Submit the flag to successfully complete the challenge.
+2. **זיהוי החולשה:**
+    * תגלה שהשרת (`server.exe`)  מאפשר חיבור רק ללקוחות עם תעודה דיגיטלית חתומה על ידי רשות אישורים ספציפית (`ca_server.exe`).
+    * תנסה להתחבר לשרת עם `client.exe` ותגלה שהשרת דוחה את החיבור כי שם התחום (Common Name) בתעודה  שונה ממה שהוא מצפה.
+
+3. **ניצול החולשה:**
+    * תבין שלא ניתן לשנות את התעודה הדיגיטלית (`client.crt`) שקיבלת כי היא חתומה דיגיטלית.
+    * תבצע  Man-in-the-Middle  (MITM) על התקשורת בין `csr_client.exe` (שמבקש תעודה) לבין `ca_server.exe` (רשות האישורים).
+    * תשתמש ב- Burp Suite כדי ליירט ולשנות את בקשת התעודה (CSR)  ולזייף את שם התחום לערך הצפוי על ידי השרת.
+    * רשות האישורים תחתום על הבקשה המזויפת ותנפיק תעודה דיגיטלית חדשה עם שם התחום הנכון.
+
+4. **פענוח הצופן:**
+    * תריץ את `client.exe` עם התעודה החדשה ותקבל קובץ תמונה מהשרת.
+    * בתוך התמונה, תמצא רמז לצופן אניגמה.
+    * במקביל, תבחין שהשרת שולח הודעות מוצפנות באמצעות אניגמה.
+    * תחקור את צופן האניגמה ותשתמש בכלים זמינים כדי לפענח את ההודעות.
+
+5. **השגת הדגל:**
+    * תפענח את התעבורה המוצפנת ב- PCAP.
+    * תמצא את ה- `client random` וה- `master secret` מהודעות האניגמה ותשתמש בהם כדי לפענח את תעבורת ה- TLS ב- Wireshark.
+    * תמצא את הדגל  שנשלח מהשרת ללקוח בתוך התעבורה המפוענחת.
+
+**רמזים:**
+
+* חקור את פרוטוקול TLS ואת אופן פעולתו של צופן אניגמה.
+* השתמש בכלים כמו Burp Suite ו- Wireshark לניתוח תעבורה רשת.
+* חפש מידע באינטרנט על  MITM וזיוף תעודות דיגיטליות.
+
+**בהצלחה!**
 
 ---
 
 ## Participants Solution
-1. **File Extraction**  
-   - Begin with `mission.pdf`.  
-   - Extract the hidden files using steganography techniques:  
-     - `server.exe`  
-     - Corrupted `client.exe`.
 
-2. **Fixing the Client**  
-   - Run `server.exe` to retrieve the encryption key (a random character sequence).  
-   - Develop a Python script to decrypt `client.exe`.  
-   - Repair and make `client.exe` executable.
+בחלק זה של ה-README, הייתי מתאר את הפתרונות האפשריים לאתגר, תוך התמקדות בדרכים בהן משתתפים עשויים לגשת לבעיה ולפתור אותה. הנה דוגמה לניסוח אפשרי:
 
-3. **Communication Analysis**  
-   - Execute `server.exe` and `client.exe` simultaneously.  
-   - Examine `capture.pcapng` extracted from `mission.pdf`.  
-   - Identify the server's behavior: only clients with a valid certificate during the TLS Handshake can access the resource.
+**פתרונות אפשריים:**
 
-4. **Creating a Second Client**  
-   - Develop `client2.exe` with unique attributes to avoid duplication issues.  
-   - Ensure `client2.exe` loads a certificate, unlike `client1`.  
-   - Enable both clients to connect concurrently without conflicts.
+* **זיהוי חולשת MITM:** משתתפים מנוסים יזהו את הפוטנציאל לביצוע מתקפת MITM על התקשורת בין הלקוח לרשות האישורים. הם יבינו שזיוף בקשת התעודה (CSR) יאפשר להם לקבל תעודה דיגיטלית עם שם התחום הנכון, ובכך לעקוף את בדיקת השרת.
+* **שימוש ב- Burp Suite:** משתתפים יוכלו להשתמש ב- Burp Suite או בכלי פרוקסי אחר כדי ליירט ולשנות את תעבורת הרשת בין `csr_client.exe` ל- `ca_server.exe`.  
+* **זיוף שם התחום:**  המשתתפים יצטרכו לזהות את שם התחום הצפוי על ידי השרת ולשנות את ה- CSR בהתאם.
+* **פענוח צופן אניגמה:** לאחר התחברות מוצלחת לשרת, המשתתפים יצטרכו לנתח את קובץ התמונה והודעות השרת כדי להבין שמדובר בצופן אניגמה.  הם יוכלו להשתמש בכלים מקוונים או לכתוב סקריפטים לפענוח הצופן.
+* **חילוץ מידע מהודעות אניגמה:** המשתתפים יצטרכו לזהות ולהשתמש במידע חיוני מהודעות האניגמה המפוענחות, כמו  `client random` ו- `master secret`, כדי לפענח את תעבורת ה- TLS.
+* **פענוח תעבורת TLS:**  המשתתפים יוכלו להשתמש ב- Wireshark או בכלי אחר לפענוח תעבורה רשת,  תוך שימוש במידע שחולץ מהודעות האניגמה.
+* **מציאת הדגל:**  לבסוף, המשתתפים יצטרכו לנתח את התעבורה המפוענחת ולמצוא את הדגל.
 
-5. **Generating a Self-Signed Certificate**  
-   - Create a self-signed certificate without relying on a Certificate Authority (CA).  
-   - Embed the certificate into `client2`'s code.  
-   - Confirm the server recognizes the certificate during the TLS Handshake.  
-   - Optionally set up a localhost domain for testing.  
-   - Prepare for the server’s potential requirement of DER-formatted certificates instead of CRT.
+**גיוונים אפשריים:**
 
-6. **Certificate Request Signing (CRS) File Verification**  
-   - Load the CRS file into `client2` post-certificate loading.  
-   - Validate proper certificate creation steps to ensure integrity.  
-   - Block bypass attempts using scripts for fake certificates.
+* ייתכן שיהיו מספר דרכים לזייף את ה- CSR. 
+* ייתכן שיהיו רמזים נוספים או אתגרים נסתרים בתוך קובץ התמונה או בהודעות האניגמה.
+* ייתכן שיהיה צורך לבצע ניתוח מעמיק יותר של פרוטוקול TLS או של צופן אניגמה.
 
-7. **Retrieving the Flag**  
-   - Use `client2` to receive `resource.png` from the server.  
-   - Identify the embedded flag in the image.  
-   - Submit the flag to successfully complete the challenge.
-
+חשוב לציין שזהו רק תיאור כללי של פתרונות אפשריים.  המשתתפים עשויים למצוא דרכים יצירתיות וייחודיות לפתור את האתגר. 
 
 מתחיל ספירה לאחור של 30 שניות, בהם המשתתף צריך לגלות את מיקום הקובץ בעזרת התוכנה שנרמזה לו מראש בהוראות לCTF, בשם procmon.
 להלן תוצאות חיפוש בprocmon שבו רואים שהקובץ server.exe משתמש בהרשאת כתיבה לתיקייה C:\Users\ShayMordechai:
-![procmon results](api/from_procmon.png)
+![procmon results](documents/from_procmon.png)
 
 
-
+![burp setting](image.png)
 
 ## הנחיות למשתתף (ליצירת תעודת לקוח)
 הנה המדריך למערכת האישורים:
