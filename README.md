@@ -686,6 +686,17 @@ def client():
 ```
 הלקוח המתקדם, שולח לשרת Client Certificate שחתום ע"י הCA שהשרת סומך עליו.
 
+Issue:
+the problem with sslkeylog.
+tshark command for debugging:
+
+```bash
+tshark
+-r capture.pcap
+-o tls.keylog_file:SSLKEYLOG.log
+-V
+```
+
 ### External Services Overview
 
 ### PE stole
@@ -786,6 +797,68 @@ It's not just 0xDEADBEEF - there's more to it!
 
 
 ![burp setting](image.png)
+
+
+
+
+ביצעתי את הפעולות הבאות:
+הפעלתי את advanced_client מול server.
+זיהיתי שהשרת משתמש במפתח ותעודת לקוח החתומה ע"י CA.
+הפעלתי את מנגנון ההחתמה על תעודה.
+גיליתי שתעודת הלקוח מכילה את הCN הלא רצוי מהserver.
+לכן הפעלתי את burp וערכתי את הCSR שיהיה עם הCN המתאים.
+שלחתי בburp את החבילה שערכתי עם CSR חדש.
+קיבלתי חותמת של הCA server על הCSR החדש.
+
+```bash
+smordeha@DESKTOP-K3JHE4M:~$ openssl x509 -in client.crt -noout -text
+Certificate:
+    Data:
+        Version: 1 (0x0)
+        Serial Number:
+            fc:89:52:3f:7c:87:32:8b
+        Signature Algorithm: sha512WithRSAEncryption
+        Issuer: C = IR, ST = Tehran, L = Tehran, O = IRGC, OU = Cybersecurity, CN = IRGC Root CA
+        Validity
+            Not Before: Dec 18 20:34:48 2024 GMT
+            Not After : Dec 18 20:34:48 2025 GMT
+        Subject: C = IL, ST = Tel Aviv, L = Tel Aviv, O = CyberSecurity, OU = IT, CN = ISRAEL
+```
+מכשול:
+בכל הרצה, נוצר client.key שונה, לכן יש להשתמש במפתח המעודכן כדי ליצור CSR מותאם אישית.
+במקרה והשתמשנו במפתח מההרצאה הקודמת, תתרחש חוסר התאמה בין המפתח הפרטי לבין תעודת הלקוח.
+להלן בדיקה באמצעות MD5 hash כדי לבדוק האם המפתח הציבורי שבcrt מתאים למפתח הפרטי של הלקוח.
+```bash
+smordeha@DESKTOP-K3JHE4M:~$ openssl rsa -noout -modulus -in client.key | openssl md5
+MD5(stdin)= ad4c091ef758454e202de341c289b1fa
+
+smordeha@DESKTOP-K3JHE4M:~$ openssl x509 -noout -modulus -in client.crt | openssl md5
+MD5(stdin)= 955d87e5c655aff32c33c3805d232f41
+```
+
+מקרה תקין:
+```bash
+smordeha@DESKTOP-K3JHE4M:/mnt/c/my-CTF/communication$ openssl x509 -noout -modulus -in client.crt | openssl md5
+MD5(stdin)= 7ae4ac4e04f8900c088000ea94bac255
+smordeha@DESKTOP-K3JHE4M:/mnt/c/my-CTF/communication$ openssl rsa -noout -modulus -in client.key | openssl md5
+MD5(stdin)= 7ae4ac4e04f8900c088000ea94bac255
+```
+
+דוגמא לפקודה ליצירת CSR על סמך KEY קיים:
+```bash
+openssl req -new
+-key client.key
+-out israel.csr
+-subj "/C=IL/ST=Tel Aviv/L=Tel Aviv/O=CyberSecurity/OU=IT/CN=ISRAEL"
+```
+
+.......
+
+
+
+חזרתי ללקוח, והפעלתי אותו מול השרת שוב פעם.
+כעת, השרת התרצה ושלח ללקוח קובץ נוסף:
+
 
 ## הנחיות למשתתף (ליצירת תעודת לקוח)
 הנה המדריך למערכת האישורים:
@@ -936,3 +1009,22 @@ Feel free to contribute to the project by opening issues or pull requests.
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+# TLS Project
+
+## Installation
+```bash
+pip install -e .
+```
+Usage:
+```bash
+python -m tls.main
+```
+
+3. כעת המרצה יוכל:
+- להוריד את הקוד מהגיט
+- להריץ `pip install -e .`
+- ואז להריץ `python -m tls.main`
+
+זו הדרך המקובלת לארגן פרויקטי Python, והיא תעבוד באופן עקבי בכל סביבה.
+
+האם תרצה שאעזור לך להוסיף את התלויות הנדרשות ל-setup.py?

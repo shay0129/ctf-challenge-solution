@@ -1,17 +1,8 @@
+# Delete crypto and pycrypto before installing this
+# pip uninstall crypto pycrypto
 pycryptodome==3.21.0
-
-scapy==2.5.0
-
-os
-typing
-time
-secrets
-hashlib
-hmac
-logging
-random
-socket
-ssl
-
-cryptography==3.3.2
-pyOpenSSL==23.2.0
+cryptography==44.0.0
+pyOpenSSL==24.3.0
+scapy==2.6.1
+logging==0.4.9.6
+setuptools==75.6.0
