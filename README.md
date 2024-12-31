@@ -516,144 +516,135 @@ tshark -r capture.pcap \
 ```
 
 מסקנות:
-אחרי השוואה של קבצי ה-debug, אני יכול לזהות מספר הבדלים מהותיים:
+אני רואה כמה נקודות חשובות בדיבאג:
 
-1. **בעיית המפתח הפרטי**:
+1. **בעיית הPre-Master Secret**:
 ```
 ssl_decrypt_pre_master_secret: decryption failed: -49 (No certificate was found.)
 ssl_generate_pre_master_secret: can't decrypt pre-master secret
 ```
-בקוד שלך, Wireshark לא מצליח לפענח את ה-pre-master secret כי הוא לא מוצא את המפתח הפרטי הנכון. בPCAP התקין, הוא כן מצליח.
+Wireshark לא מצליח לפענח את ה-pre-master secret למרות שיש לנו מפתח תקין ב-SSLKEYLOG. זה יכול להיות קשור לאיך שהמפתח מיוצא.
 
-2. **סוג ההצפנה**:
-- בקוד שלך: `TLS_RSA_WITH_AES_128_CBC_SHA256` 
-- בPCAP התקין: `TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384`
-
-3. **זרימת המפתחות**:
-- בPCAP התקין: יש תהליך מלא של הפקת מפתחות וחישוב נכון של ה-master secret
-- בקוד שלך: התהליך נתקע בשלב מוקדם כשלא מצליח לפענח את ה-pre-master secret
-
-4. **מבנה החבילות**:
-בPCAP התקין יש זרימה תקינה של:
-1. Client Hello
-2. Server Hello
-3. Certificate
-4. Server Key Exchange (שחסר בקוד שלך)
-5. Client Key Exchange
-6. Change Cipher Spec
-
-המלצות לתיקון:
-1. וודא שאתה שומר את המפתח הפרטי בפורמט הנכון ושהוא נגיש ל-Wireshark
-2. שקול להשתמש ב-ECDHE במקום RSA טהור לkey exchange
-3. בדוק שכל השדות בתעודות תואמים למה שמצופה
-4. וודא שה-sslkeylog נכתב בפורמט המדויק שWireshark מצפה לו
-
-
-בקוד שלי חסר Server Key Exchange בגלל שאני משתמש בRSA לחילוף מפתחות ואין צורך בזה אלא עבור ecdhe.
-
-אני מעדיף RSA עבור פשטות הקוד והתרגיל עבור למידה מדורגת.
-
-הSSLKEYLOG נכתב בפורמט הנכון ומכיל את הclient random, master secret הנכונים.
-
-אולי הבעיה היא בהצפנה של החבילות באמצעות master secret?
-
-
-הבנתי. אתה צודק בהחלט:
-1. עבור RSA key exchange אכן לא נדרש Server Key Exchange
-2. הפורמט של SSLKEYLOG נראה תקין
-
-בוא נתמקד בהצפנת החבילות. מהלוגים אני רואה:
-
-בPCAP התקין:
+2. **בעיית Master Secret**:
+למרות שאנחנו מצליחים לקרוא את ה-master secret מה-SSLKEYLOG:
 ```
-// מתבצע בהצלחה הפקת מפתחות מה-master secret
-ssl_generate_keyring_material sess key generation
-Client MAC key[32]: ...
-Server MAC key[32]: ...
-Client Write key[32]: ...
-Server Write key[32]: ...
-Client Write IV[4]: ...
-Server Write IV[4]: ...
+Client Random[32]:
+| 67 74 3f 23 fc 15 af ab 81 15 dd 81 72 3e a2 bd |
+...
+(pre-)master secret[48]:
+| 1e 08 9f 36 9f 9b 76 8c 0c 05 b5 73 03 8b 5e 39 |
 ```
 
-בPCAP שלך:
+יש בעיה בשימוש בו:
 ```
-// נכשל בפענוח חבילות האפליקציה
-decrypt_ssl3_record: using client decoder
-decrypt_ssl3_record: no decoder available
+ssl_restore_master_key can't find master secret by Session ID
+ssl_restore_master_key can't find master secret by Client Random
+Cannot find master secret
 ```
 
-נראה שיש בעיה בשלב הפקת מפתחות ההצפנה מה-master secret. הWireshark מצליח לקרוא את ה-master secret מה-SSLKEYLOG אבל לא מצליח להשתמש בו נכון להפקת מפתחות ההצפנה.
+3. **בעיית Key Block**:
+```python
+key_block = session.prf.derive_key_block(
+    session.master_secret,
+    b"key expansion",
+    session.server_random + session.client_random,
+    key_length
+)
+```
+אנחנו מייצרים את ה-key block נכון, אבל Wireshark לא משתמש במפתחות האלה.
 
-בוא נבדוק:
-1. האם ה-PRF (Pseudorandom Function) מיושמת נכון עבור הפקת המפתחות?
-2. האם התזמון של ה-Change Cipher Spec והתחלת השימוש במפתחות נכון?
-3. האם ה-key block נבנה נכון עם כל המרכיבים (MAC keys, encryption keys, IVs)?
+זה נראה שיש בעיה במעבר בין השלבים:
+1. יצירת ה-pre master secret
+2. גזירת ה-master secret
+3. יצירת מפתחות ההצפנה
+4. שימוש במפתחות להצפנה
 
-תוכל להראות את הקוד שאחראי על הפקת מפתחות ההצפנה מה-master secret?
+אולי נבדוק:
+1. האם ה-SSLKEYLOG מכיל את ה-master secret הנכון (לבדוק hash של המפתח)
+2. האם סדר הbytes של ה-client_random ו-master_secret בקובץ SSLKEYLOG נכון
+3. האם הפורמט של קובץ הLOG תואם בדיוק למה שWireshark מצפה
+
+מה דעתך?
+
+
+יצירת ה-pre master secret
+utils/crypto.py
+```python
+def generate_pre_master_secret() -> bytes:
+    tls_version_bytes = TLSVersion.TLS_1_2.to_bytes(2, byteorder='big')
+    random_bytes = secrets.token_bytes(46)
+    pre_master_secret = tls_version_bytes + random_bytes
+```
+גזירת ה-master secret
+```python
+def generate_master_secret(session, encrypted_pre_master_secret, client_random, server_random):
+    pre_master_secret = decrypt_pre_master_secret(
+        encrypted_pre_master_secret,
+        session.server_private_key
+    )
+    
+    master_secret = session.prf.compute_master_secret(
+        pre_master_secret,
+        client_random,
+        server_random
+    )
+```
+שימוש בו
+```python
+def create_client_certificate_and_key_exchange(...):
+# Generate and encrypt pre-master secret
+session.pre_master_secret = generate_pre_master_secret()
+session.encrypted_pre_master_secret = encrypt_pre_master_secret(
+    session.pre_master_secret,
+    session.server_public_key
+)
+```
+נראה תקין - אנחנו מפענחים את ה-pre_master_secret ומשתמשים בו עם ה-PRF ליצירת ה-master_secret.
+
+
+יצירת מפתחות ההצפנה
+שימוש במפתחות להצפנה
+
 
 #### Application Data Encryption
 Code for encrypting application data using AES-128-CBC with HMAC-SHA256.
 ```python
-def encrypt_and_send_application_data(self, data, is_request) -> bytes:
-    """
-    Encrypts and sends TLS application data as per RFC 5246.
-    """
-    try:
-        # Determine client/server context
-        is_client = is_request
-        key_block = self.prf.derive_key_block(
-            self.master_secret,
-            self.server_random,
-            self.client_random,
-            2 * (16 + 32)  # 2 * (key_length + mac_key_length)
-        )
-
-        # Extract keys and IV
-        client_mac_key = key_block[0:32]
-        server_mac_key = key_block[32:64]
-        client_key = key_block[64:80]
-        server_key = key_block[80:96]
-
-        key = client_key if is_client else server_key
-        mac_key = client_mac_key if is_client else server_mac_key
-        explicit_iv = os.urandom(16)
-
-        # Generate sequence number
-        seq_num = self.client_seq_num if is_client else self.server_seq_num
-        seq_num_bytes = seq_num.to_bytes(8, byteorder='big')
-
-        # Encrypt data
-        encrypted_data = encrypt_tls12_record_cbc(data, key, explicit_iv, mac_key, seq_num_bytes)
-
-        # Construct TLS record
-        tls_record = explicit_iv + encrypted_data
-        tls_data = TLSApplicationData(data=tls_record)
-        self.tls_context.msg = [tls_data]
-
-        # Update sequence number
-        if is_client:
-            self.client_seq_num += 1
-        else:
-            self.server_seq_num += 1
-
-        # Determine source and destination
-        src_ip = self.client_ip if is_request else self.server_ip
-        dst_ip = self.server_ip if is_request else self.client_ip
-        sport = self.client_port if is_request else self.server_port
-        dport = self.server_port if is_request else self.client_port
-
-        # Send packet
-        raw_packet = self.send_tls_packet(src_ip, dst_ip, sport, dport)
-
-        # Log success
-        logging.info(f"TLS Application Data sent from {src_ip}:{sport} to {dst_ip}:{dport}")
-        return raw(tls_data)
-
-    except Exception as e:
-        logging.error(f"Error in encrypt_and_send_application_data: {e}")
-        raise
-
+def _handle_encrypted_exchange(
+        self,
+        request_data: bytes,
+        response_data: bytes,
+        file_to_send: Optional[str]
+    ) -> None:
+        """Handle encrypted data exchange"""
+        try:
+            # Send client request
+            logging.info("Sending encrypted request data")
+            encrypt_and_send_application_data(
+                self, request_data, is_request=True,
+                prf=self.prf, master_secret=self.master_secret,
+                server_random=self.server_random, client_random=self.client_random,
+                client_ip=self.client_ip, server_ip=self.server_ip,
+                client_port=self.client_port, server_port=self.server_port,
+                tls_context=self.tls_context, state=self.state
+            )
+            
+            # Send server response
+            logging.info("Sending encrypted response data")
+            encrypt_and_send_application_data(
+                self, response_data, is_request=False,
+                prf=self.prf, master_secret=self.master_secret,
+                server_random=self.server_random, client_random=self.client_random,
+                client_ip=self.client_ip, server_ip=self.server_ip,
+                client_port=self.client_port, server_port=self.server_port,
+                tls_context=self.tls_context, state=self.state
+            )
+            
+            # Send file if available
+            if file_to_send:
+                logging.info(f"Attempting to send file: {file_to_send}")
+                self._send_file(file_to_send)
+                logging.info("File sent successfully")
+                    
 ```
 
 
