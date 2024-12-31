@@ -93,39 +93,46 @@ Core Features:
 2. **Application Data Exchange**: Supports both encrypted `TLS` and unencrypted `HTTP` communication based on session configuration.
 
 ```python
-def main():
-    logging.info("\n--- Client 1 Session ---")
-    client1_session = UnifiedTLSSession(
-        pcap_writer = writer,
-        client_ip = config.CLIENT1_IP,
-        server_ip = config.SERVER_IP,
-        client_port=12345,
-        server_port=443,
-        use_tls=True,
-        use_client_cert=True
-    )
-    client1_session.run_session(
-        config.GET_REQUEST,
-        config.OK_RESPONSE,
-        'ctf_challenge.gif'
-    )
+def main() -> None:
 
-    logging.info("\n--- Client 2 Session ---")
-    client2_session = UnifiedTLSSession(
-        pcap_writer = writer,
-        client_ip = config.CLIENT2_IP,
-        server_ip = config.SERVER_IP,
-        client_port=12346,
-        server_port=443,
-        use_tls=True,
-        use_client_cert=False
-    )
-    client2_session.run_session(
-        config.GET_REQUEST,
-        config.BAD_REQUEST
-    )
+    # Load configuration first
+    config = NetworkConfig.load()
 
-    writer.save_pcap(config.OUTPUT_PCAP)
+    # Setup logging using the log_path and log_level from config
+    setup_logging(
+        log_path=config.log_path, 
+        level=config.log_level
+    )
+    logging.info("Starting TLS session simulation")
+
+    # Setup environment and continue with rest of the code
+    writer = setup_environment(config)
+    
+    # Run Client 1 session (with certificate)
+    run_client_session(
+        writer=writer,
+        client_ip=NetworkAddresses.CLIENT_1_IP,
+        server_ip=NetworkAddresses.SERVER_IP,
+        client_port=NetworkPorts.CLIENT_DEFAULT,
+        use_client_cert=True,
+        request=NetworkConfig.GET_REQUEST,
+        response=NetworkConfig.OK_RESPONSE,
+        challenge_file=CHALLENGE_FILE
+    )
+    
+    # Run Client 2 session (without certificate)
+    run_client_session(
+        writer=writer,
+        client_ip=NetworkAddresses.CLIENT_2_IP,
+        server_ip=NetworkAddresses.SERVER_IP,
+        client_port=NetworkPorts.CLIENT_DEFAULT + 1,
+        use_client_cert=False,
+        request=NetworkConfig.GET_REQUEST,
+        response=NetworkConfig.BAD_REQUEST
+    )
+    
+    # Save and verify results
+    save_results(writer, config)
 ```
 #### **Explanation**
 
@@ -145,53 +152,49 @@ def main():
 ### TLS Handshake Steps
 TLS Handshake Steps: Functions for each step of the TLS handshake, including ClientHello, ServerHello, key exchange, and setting up secure communication.
 ```python
-def perform_handshake(self)-> None:
-        """
-        Executes the TLS handshake process according to RFC 5246.
-        """
-        # Step 1: Client Hello
-        self.send_client_hello()
+def perform_handshake(self) -> bool:
+
+        send_client_hello(self)
+        send_server_hello(self)
+        send_client_handshake_messages(self)
+        handle_master_secret(self)
+        send_client_change_cipher_spec(self)
+        send_server_change_cipher_spec(self)
+        handle_ssl_key_log(self)
         
-        # Step 2: Server Hello, Certificate, ServerKeyExchange (if needed), ServerHelloDone
-        self.send_server_hello()
-        
-        # Step 3: Client (RSA) Key Exchange (and Client Certificate if required)
-        self.send_client_key_exchange()
-        
-        # Step 4: Generate Master Secret
-        self.handle_master_secret()
-        
-        # Step 5: Client ChangeCipherSpec and Finished
-        self.send_client_change_cipher_spec()
-        
-        # Step 6: Server ChangeCipherSpec and Finished
-        self.send_server_change_cipher_spec()
-        
-        # Log SSL keys for Wireshark
-        self.handle_ssl_key_log()
+        self.state.handshake_completed = True
+        logging.info("TLS Handshake completed successfully")
+        return True
 ```
 ---
 #### **Client Hello**
 **Purpose**: The client Initiates the handshake by sending the supported `ciphers`, `extensions`, and `random` bytes.
 ```python
-def send_client_hello(self)-> None:
-        self.client_GMT_unix_time, self.client_random_bytes = generate_random()
-        self.client_random = self.client_GMT_unix_time.to_bytes(4, 'big') + self.client_random_bytes
-        logging.info(f"Generated client_random: {self.client_random.hex()}")
-        
-        client_hello = TLSClientHello(
-            version=0x0303,  # TLS 1.2
-            ciphers=[TLS_RSA_WITH_AES_128_CBC_SHA256],
-            ext=[
-                TLS_Ext_ServerName(servernames=[ServerName(servername=f"{self.server_name}.local".encode())]),
-                TLS_Ext_EncryptThenMAC(),
-                TLS_Ext_SupportedGroups(groups=["x25519"]),
-                TLS_Ext_SignatureAlgorithms(sig_algs=["sha256+rsa"]),
-            ],
-            gmt_unix_time=self.client_GMT_unix_time,
-            random_bytes=self.client_random_bytes
+def create_client_hello(
+    session,
+    extensions: Optional[ClientExtensions] = None
+    ) -> TLSClientHello:
+
+    # Generate client random
+    session.client_GMT_unix_time, session.client_random_bytes = generate_random()
+    session.client_random = session.client_GMT_unix_time.to_bytes(4, 'big') + session.client_random_bytes
+    logging.info(f"Generated client_random: {session.client_random.hex()}")
+
+    # Use default extensions if none provided
+    if not extensions:
+        extensions = ClientExtensions(
+            server_name=session.SNI,
+            supported_groups=["x25519"],
+            signature_algorithms=["sha256+rsa"]
         )
-        self.send_to_server(client_hello)
+
+    return TLSClientHello(
+        version=TLSVersion.TLS_1_2,
+        ciphers=[TLS_RSA_WITH_AES_128_CBC_SHA256],
+        ext=extensions.get_extension_list(),
+        gmt_unix_time=session.client_GMT_unix_time,
+        random_bytes=session.client_random_bytes
+    )
 ```
  ***Explanation:***
 1. **Client Random:** Combines the GMT Unix timestamp and 28 random bytes.
@@ -203,35 +206,30 @@ def send_client_hello(self)-> None:
 #### **Server Hello**
 **Purpose**: Responds to the `Client Hello` by  server `random` bytes`selected cipher` (encryption parameters) and `extenstions`.
 ```python
-def send_server_hello(self)-> None:      
-        # Generate a Server Random
-        self.server_GMT_unix_time, self.server_random_bytes = generate_random()
-        self.server_random = self.server_GMT_unix_time.to_bytes(4, 'big') + self.server_random_bytes
-        logging.info(f"Generated server_random: {self.server_random.hex()}")
+def create_server_hello(
+        session,
+        extensions: Optional[ServerExtensions] = None
+        ) -> TLSServerHello:
 
-        server_hello = TLSServerHello(
-            version=0x0303,  # TLS 1.2
-            gmt_unix_time=self.server_GMT_unix_time,
-            random_bytes=self.server_random_bytes,
-            sid = os.urandom(32),
-            cipher=TLS_RSA_WITH_AES_128_CBC_SHA256.val,
-            ext=[
-                TLS_Ext_SignatureAlgorithms(sig_algs=['sha256+rsaepss']),
-                TLS_Ext_ExtendedMasterSecret(),
-                TLS_Ext_EncryptThenMAC()
-                ]
-            )
-        
-        certificate = TLSCertificate(certs=cert_entries)
+    # Generate server random
+    session.server_GMT_unix_time, session.server_random_bytes = generate_random()
+    session.server_random = session.server_GMT_unix_time.to_bytes(4, 'big') + session.server_random_bytes
+    logging.info(f"Generated server_random: {session.server_random.hex()}")
 
-        cert_request = TLSCertificateRequest(
-            ctypes=[1],  # RSA certificate type
-            sig_algs=[0x0401],  # SHA256 + RSA
-            certauth=[
-                (len(ca_dn), ca_dn)  # Use only the Distinguished Name
-            ]
+    # Use default extensions if none provided
+    if not extensions:
+        extensions = ServerExtensions(
+            signature_algorithms=['sha256+rsaepss']
         )
-        self.send_to_client(server_hello, certificate, cert_request, TLSServerHelloDone())
+
+    return TLSServerHello(
+        version=TLSVersion.TLS_1_2,
+        gmt_unix_time=session.server_GMT_unix_time,
+        random_bytes=session.server_random_bytes,
+        sid=os.urandom(32),
+        cipher=TLS_RSA_WITH_AES_128_CBC_SHA256.val,
+        ext=extensions.get_extension_list()
+    )
 ```
  ***Explanation:***
 1. **Server Random:** Combines a timestamp and random bytes for key generation.
@@ -245,27 +243,40 @@ def send_server_hello(self)-> None:
 **Purpose**: The client generates a `Pre-Master Secret`, encrypts it, and sends it to the server.
 This secret is encrypted using the server's `public key`, making it accessible only to the intended recipient.
 ```python
-def send_client_key_exchange(self)-> None:
+def create_client_certificate_and_key_exchange(
+        session
+        ) -> tuple[TLSCertificate, TLSClientKeyExchange]:
 
-        # Client Certificate Handle
+    # Prepare client certificate
+    if session.use_client_cert:
+        client_cert_path = CERTS_DIR / "client.crt"
+        cert = load_cert(client_cert_path)
+        cert_der = cert.public_bytes(serialization.Encoding.DER)
         client_certificate = TLSCertificate(certs=[(len(cert_der), cert_der)])
-        self.handshake_messages.append(raw(client_certificate))
+        logging.info("Prepared client certificate")
+    else:
+        client_certificate = TLSCertificate(certs=[])
+        logging.info("Prepared empty certificate")
 
-        # Client (RSA) Key Exchange
-        self.pre_master_secret = generate_pre_master_secret()
-        self.encrypted_pre_master_secret = encrypt_pre_master_secret(
-            self.pre_master_secret, 
-            self.server_public_key
-        )
+    # Generate and encrypt pre-master secret
+    session.pre_master_secret = generate_pre_master_secret()
+    session.encrypted_pre_master_secret = encrypt_pre_master_secret(
+        session.pre_master_secret,
+        session.server_public_key
+    )
 
-        client_key_exchange = TLSClientKeyExchange(
-            exchkeys=length_bytes + self.encrypted_pre_master_secret
-        )
+    if not isinstance(session.encrypted_pre_master_secret, bytes):
+        session.encrypted_pre_master_secret = bytes(session.encrypted_pre_master_secret)
+    
+    logging.info(f"Encrypted pre_master_secret length: {len(session.encrypted_pre_master_secret)}")
 
-        self.send_to_server(client_certificate, client_key_exchange)
+    # Create key exchange message
+    length_bytes = len(session.encrypted_pre_master_secret).to_bytes(2, 'big')
+    client_key_exchange = TLSClientKeyExchange(
+        exchkeys=length_bytes + session.encrypted_pre_master_secret
+    )
 
-
-
+    return client_certificate, client_key_exchange
 ```
  ***Explanation:***
 1. **Client Certificate:** A TLS certificate representing the client is prepared and appended to the handshake messages.
@@ -281,11 +292,32 @@ Notice:
 לעומת זאת, במקרים של Diffie-Hellman (DH) או Elliptic Curve Diffie-Hellman (ECDH), כן נדרשת הודעת ServerKeyExchange.
 
 ```python
-def encrypt_pre_master_secret(pre_master_secret: bytes, server_public_key: rsa.RSAPublicKey) -> bytes:
-    return server_public_key.encrypt(
-        pre_master_secret,
-        asymmetric_padding.PKCS1v15()
+def generate_master_secret(
+        session,
+        encrypted_pre_master_secret: bytes,
+        client_random: bytes,
+        server_random: bytes
+    ) -> bytes:
+
+    # Decrypt pre-master secret
+    pre_master_secret = decrypt_pre_master_secret(
+        encrypted_pre_master_secret,
+        session.server_private_key
     )
+    
+    logging.info(
+        f"Decrypted pre_master_secret: {pre_master_secret.hex()}"
+    )
+    
+    # Compute master secret
+    master_secret = session.prf.compute_master_secret(
+        pre_master_secret,
+        client_random,
+        server_random
+    )
+    
+    logging.info(f"Generated master secret: {master_secret.hex()}")
+    return master_secret
 ```
 The `encrypt_pre_master_secret()` function:
 - PKCS1v15 padding (standard for RSA encryption)
@@ -298,26 +330,15 @@ The `encrypt_pre_master_secret()` function:
 
 
 ```python
-def handle_master_secret(self)-> None:
-        """
-        Verifies and calculates the Master Secret.
-        """
-        # Step 1: Decrypt Pre-Master Secret
-        decrypted_pre_master_secret = decrypt_pre_master_secret(
-            self.encrypted_pre_master_secret,
-            self.server_private_key
-        )
+def handle_master_secret(session) -> None:
 
-        # Step 2: Validate Pre-Master Secret
-        if compare_to_original(decrypted_pre_master_secret, self.pre_master_secret):
-            logging.info("Pre master secret encrypted matches.")
+    session.master_secret = generate_master_secret(
+        session,
+        session.encrypted_pre_master_secret,
+        session.client_random,
+        session.server_random
+    )
 
-        # Step 3: Compute Master Secret using PRF
-        self.master_secret = self.prf.compute_master_secret(
-            self.pre_master_secret,
-            self.client_random,
-            self.server_random
-        )
 ```
  ***Explanation:***
 1. **Client Side:**
@@ -339,21 +360,29 @@ def handle_master_secret(self)-> None:
 **Purpose:** The `ChangeCipherSpec` message is sent by the client to notify the server that it will start using the negotiated encryption and MAC settings. This is immediately followed by the `Finished` message, encrypted with the newly established settings.
 
 ```python
-def send_client_change_cipher_spec(self)-> None:
+def send_client_change_cipher_spec(session) -> bytes:
 
-        # Compute the client verify data for the Finished message
-        client_verify_data = self.prf.compute_verify_data(
-                'client',
-                'write',
-                b''.join(self.handshake_messages),
-                self.master_secret
-            )
+    # Create messages
+    client_finished, change_cipher_spec = create_client_finished(session)
 
-        # Create TLSFinished and ChangeCipherSpec messages
-        client_finished = TLSFinished(vdata=client_verify_data)
-        change_cipher_spec = TLSChangeCipherSpec()
-        self.send_to_server(client_finished)
-        self.send_to_server(change_cipher_spec)
+    # Send messages
+    session.send_to_server(client_finished)
+    session.send_to_server(change_cipher_spec)
+
+    # Update handshake state
+    session.handshake_messages.append(raw(client_finished))
+    session.handshake_messages.append(raw(change_cipher_spec))
+    session.tls_context.msg = [change_cipher_spec, client_finished]
+
+    logging.info("Client ChangeCipherSpec and Finished messages sent")
+    return session.send_tls_packet(
+        session.client_ip,
+        session.server_ip,
+        session.client_port,
+        session.server_port,
+        is_handshake=True
+    )
+
 ```
  ***Explanation:***
 1. **Verify Data:**
@@ -371,27 +400,28 @@ def send_client_change_cipher_spec(self)-> None:
 - **Purpose:** The server sends the `ChangeCipherSpec` message to notify the client it will use the negotiated encryption settings. It follows with the `Finished` message, encrypted with the new settings, to confirm the handshake.
 
 ```python
-def send_server_change_cipher_spec(self):
-        # Compute the server verify data for the Finished message
-            server_verify_data = self.prf.compute_verify_data(
-                'server',
-                'write',
-                b''.join(self.handshake_messages),
-                self.master_secret
-            )
+def send_server_change_cipher_spec(session) -> bytes:
 
-            # Decrypt pre-master secret for validation (optional)
-            decrypted_pre_master_secret = decrypt_pre_master_secret(
-                self.encrypted_pre_master_secret,
-                self.server_private_key
-            )
+    # Create messages
+    server_finished, change_cipher_spec = create_server_finished(session)
 
-            # Create TLSFinished and ChangeCipherSpec messages
-            server_finished = TLSFinished(vdata=server_verify_data)
-            change_cipher_spec = TLSChangeCipherSpec()
+    # Send messages
+    session.send_to_client(server_finished)
+    session.send_to_client(change_cipher_spec)
 
-            self.send_to_client(server_finished)
-            self.send_to_client(change_cipher_spec)
+    # Update handshake state
+    session.handshake_messages.append(raw(server_finished))
+    session.handshake_messages.append(raw(change_cipher_spec))
+    session.tls_context.msg = [change_cipher_spec, server_finished]
+
+    logging.info("Server ChangeCipherSpec and Finished messages sent")
+    return session.send_tls_packet(
+        session.server_ip,
+        session.client_ip,
+        session.server_port,
+        session.client_port,
+        is_handshake=True
+    )
 ```
  ***Explanation:***
 1. **Verify Data:**
@@ -413,16 +443,28 @@ Here’s the revised section in the desired format:
 - **Purpose:** Enables debugging of encrypted TLS traffic by exporting the `master_secret` and `client_random` to a log file, making it compatible with tools like Wireshark.  
 
 ```python
-def main():
-    # Clear the SSL_KEYLOG_FILE
-    with open(config.SSL_KEYLOG_FILE, "w") as f:
-        pass
+def setup_environment(config: NetworkConfig) -> CustomPcapWriter:
 
-def handle_ssl_key_log(self) -> None:
-        """Write keys in the correct format for Wireshark"""
-        with open(self.pcap_writer.config.SSL_KEYLOG_FILE, "a") as f:
-            # Log master secret with client random
-            f.write(f"CLIENT_RANDOM {self.client_random.hex()} {self.master_secret.hex()}\n")
+    writer = CustomPcapWriter(config)
+    
+    # Clear SSL keylog file
+    if hasattr(config, 'SSL_KEYLOG_FILE'):
+        Path(LoggingPaths.SSL_KEYLOG).write_text('')
+        logging.info(f"Cleared SSL keylog file: {LoggingPaths.SSL_KEYLOG}")
+        
+    return writer
+
+def handle_ssl_key_log(session) -> None:
+
+    # Make sure directory exists
+    LoggingPaths.SSL_KEYLOG.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Open in write mode to clear previous content
+    with open(LoggingPaths.SSL_KEYLOG, "w") as f:
+        client_random_hex = session.client_random.hex()
+        master_secret_hex = session.master_secret.hex()
+        # Format: CLIENT_RANDOM <client_random_hex> <master_secret_hex>
+        f.write(f"CLIENT_RANDOM {client_random_hex} {master_secret_hex}\n")
 ```
 
 ***Explanation:***  
@@ -452,41 +494,103 @@ The `SSL_KEYLOG_FILE` functionality was implemented to allow decryption of encry
 
 #### **Steps Taken to Address the Issue**
 
-1. **Reviewing Wireshark’s Open-Source Code**  
-   - I explored the implementation details of how Wireshark processes `sslkeylog` files for decryption. This investigation provided insights into the decryption pipeline but did not reveal any immediate issues with the format or content of the log file generated by my script.  
+ערכתי קובץ PCAP אמיתי, וחילצתי ממנו tls stream אחד, כדי לבצע בדיקה מצומצמת.
+```bash
+tshark -r TLSsniffEx.pcapng \
+    -Y "(ip.dst == 193.34.188.81 or ip.src == 193.34.188.81) and frame.number > 65 and frame.number < 96" \
+     -w miniTLSsniffEx.pcap
+```
 
-2. **Comparison with a Valid PCAP File**  
-   - I compared the decryption process of a known working PCAP file with my generated PCAP file using the following TShark command:  
-     ```bash
-     tshark -r <pcap_name.pcap> \
-         -o "tls.keylog_file:<sslkeylog_name.log>" \
-         -o "tls.debug_file:<tls_debug_name.txt>" \
-         -V
-     ```
-   - This helped identify that the format of the `sslkeylog` file and the `client_random`/`master_secret` entries appeared to be correct.  
+ביצוע debug על הPCAPs:
+```bash
+tshark -r miniTLSsniffEx.pcap \
+    -o "tls.keylog_file:sslkeylog_sniffEx.log" \
+    -o "tls.debug_file:debug_sniffEx.txt" \
+    -V > output_sniffEx.txt
 
-3. **Decryption Process Debugging**  
-   - Based on my research, the decryption process generally involves:  
-     1. Parsing the `Client Random` and `Server Random` values.  
-     2. Matching these values to the `sslkeylog` file entries.  
-     3. Deriving the session keys for decrypting the traffic.  
-   - There did not seem to be an issue with these steps, as the `Client Random` and `Master Secret` were successfully generated and logged.
 
-4. **Consideration of Self-Signed Certificates**  
-   - I hypothesized that the use of self-signed certificates might be causing an issue, as they are not trusted by the OS or Wireshark. However, this should not typically prevent decryption if the session keys are correct, as the `sslkeylog` file bypasses the need for certificate validation.
+tshark -r capture.pcap \
+    -o "tls.keylog_file:ssl_key_log.log" \
+    -o "tls.debug_file:debug_capture.txt" \
+    -V > output_capture.txt
+```
 
-#### **Next Steps**
-- Continue investigating the exact reason for the failure, possibly by:
-  - Capturing a more detailed debug log using TShark’s `-o tls.debug_file` option.
-  - Testing with CA-signed certificates to rule out self-signed certificate-related issues.
-  - Exploring alternative TLS libraries or tools to verify the integrity of the generated session keys.
+מסקנות:
+אחרי השוואה של קבצי ה-debug, אני יכול לזהות מספר הבדלים מהותיים:
 
-#### **Conclusion**
-While the issue remains unresolved, I have documented all attempts and hypotheses. This ensures a clear understanding of the problem and demonstrates due diligence in troubleshooting. Fixing this issue is not a requirement for full credit, as per the instructions, but I will continue to investigate to improve the implementation.  
+1. **בעיית המפתח הפרטי**:
+```
+ssl_decrypt_pre_master_secret: decryption failed: -49 (No certificate was found.)
+ssl_generate_pre_master_secret: can't decrypt pre-master secret
+```
+בקוד שלך, Wireshark לא מצליח לפענח את ה-pre-master secret כי הוא לא מוצא את המפתח הפרטי הנכון. בPCAP התקין, הוא כן מצליח.
 
---- 
+2. **סוג ההצפנה**:
+- בקוד שלך: `TLS_RSA_WITH_AES_128_CBC_SHA256` 
+- בPCAP התקין: `TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384`
 
-Let me know if you'd like further clarification or adjustments.
+3. **זרימת המפתחות**:
+- בPCAP התקין: יש תהליך מלא של הפקת מפתחות וחישוב נכון של ה-master secret
+- בקוד שלך: התהליך נתקע בשלב מוקדם כשלא מצליח לפענח את ה-pre-master secret
+
+4. **מבנה החבילות**:
+בPCAP התקין יש זרימה תקינה של:
+1. Client Hello
+2. Server Hello
+3. Certificate
+4. Server Key Exchange (שחסר בקוד שלך)
+5. Client Key Exchange
+6. Change Cipher Spec
+
+המלצות לתיקון:
+1. וודא שאתה שומר את המפתח הפרטי בפורמט הנכון ושהוא נגיש ל-Wireshark
+2. שקול להשתמש ב-ECDHE במקום RSA טהור לkey exchange
+3. בדוק שכל השדות בתעודות תואמים למה שמצופה
+4. וודא שה-sslkeylog נכתב בפורמט המדויק שWireshark מצפה לו
+
+
+בקוד שלי חסר Server Key Exchange בגלל שאני משתמש בRSA לחילוף מפתחות ואין צורך בזה אלא עבור ecdhe.
+
+אני מעדיף RSA עבור פשטות הקוד והתרגיל עבור למידה מדורגת.
+
+הSSLKEYLOG נכתב בפורמט הנכון ומכיל את הclient random, master secret הנכונים.
+
+אולי הבעיה היא בהצפנה של החבילות באמצעות master secret?
+
+
+הבנתי. אתה צודק בהחלט:
+1. עבור RSA key exchange אכן לא נדרש Server Key Exchange
+2. הפורמט של SSLKEYLOG נראה תקין
+
+בוא נתמקד בהצפנת החבילות. מהלוגים אני רואה:
+
+בPCAP התקין:
+```
+// מתבצע בהצלחה הפקת מפתחות מה-master secret
+ssl_generate_keyring_material sess key generation
+Client MAC key[32]: ...
+Server MAC key[32]: ...
+Client Write key[32]: ...
+Server Write key[32]: ...
+Client Write IV[4]: ...
+Server Write IV[4]: ...
+```
+
+בPCAP שלך:
+```
+// נכשל בפענוח חבילות האפליקציה
+decrypt_ssl3_record: using client decoder
+decrypt_ssl3_record: no decoder available
+```
+
+נראה שיש בעיה בשלב הפקת מפתחות ההצפנה מה-master secret. הWireshark מצליח לקרוא את ה-master secret מה-SSLKEYLOG אבל לא מצליח להשתמש בו נכון להפקת מפתחות ההצפנה.
+
+בוא נבדוק:
+1. האם ה-PRF (Pseudorandom Function) מיושמת נכון עבור הפקת המפתחות?
+2. האם התזמון של ה-Change Cipher Spec והתחלת השימוש במפתחות נכון?
+3. האם ה-key block נבנה נכון עם כל המרכיבים (MAC keys, encryption keys, IVs)?
+
+תוכל להראות את הקוד שאחראי על הפקת מפתחות ההצפנה מה-master secret?
 
 #### Application Data Encryption
 Code for encrypting application data using AES-128-CBC with HMAC-SHA256.
