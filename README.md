@@ -158,6 +158,12 @@ def perform_handshake(self) -> bool:
         send_server_hello(self)
         send_client_handshake_messages(self)
         handle_master_secret(self)
+        """ה-ChangeCipherSpec אומר לצד השני "מעכשיו אני משתמש בהצפנה"
+הודעת ה-Finished צריכה להיות מוצפנת עם המפתחות החדשים
+
+ההודעה נועדה ליידע את הצד השני בשיחה (במקרה זה השרת) שמעתה כל ההודעות שישלחו יהיו מוצפנות וישתמשו במפתחות הסימטריים שנוצרו בשלב הקודם.
+
+"""
         send_client_change_cipher_spec(self)
         send_server_change_cipher_spec(self)
         handle_ssl_key_log(self)
@@ -646,6 +652,28 @@ def _handle_encrypted_exchange(
                 logging.info("File sent successfully")
                     
 ```
+issue in encoding procces:
+נראה שהבעיה היא קצת יותר עמוקה. בוא נסתכל על החבילות המוצפנות:
+
+1. **יצירת ה-Decoder ב-Wireshark**:
+```
+ssl_generate_keyring_material ssl_create_decoder(client)
+decoder initialized (digest len 32)
+ssl_generate_keyring_material ssl_create_decoder(server)
+decoder initialized (digest len 32)
+```
+Wireshark מצליח ליצור את ה-decoders.
+
+2. **אבל בפענוח**:
+```
+decrypt_ssl3_record: using client decoder
+decrypt_ssl3_record: no decoder available
+```
+הוא מחליט שאין decoder זמין.
+
+הבעיה יכולה להיות:
+1. או בחיבור בין ה-`ChangeCipherSpec` ל-key block
+2. או במבנה של החביל
 
 
 ### SSL Communication Overview
