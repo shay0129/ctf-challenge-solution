@@ -1,3 +1,83 @@
+
+### **Notice: SSL Key Log File Decryption Issue**
+
+#### **Context**
+The `SSL_KEYLOG_FILE` functionality was implemented to allow decryption of encrypted TLS traffic in tools like Wireshark and TShark. However, during testing, I encountered difficulties in successfully decrypting the `Application Data` packets in both Wireshark and TShark.
+
+#### **Steps Taken to Address the Issue**
+
+ערכתי קובץ PCAP אמיתי, וחילצתי ממנו tls stream אחד, כדי לבצע בדיקה מצומצמת.
+```bash
+tshark -r TLSsniffEx.pcapng \
+    -Y "(ip.dst == 193.34.188.81 or ip.src == 193.34.188.81) and frame.number > 65 and frame.number < 96" \
+     -w miniTLSsniffEx.pcap
+```
+
+ביצוע debug על הPCAPs:
+```bash
+tshark -r miniTLSsniffEx.pcap \
+    -o "tls.keylog_file:sslkeylog_sniffEx.log" \
+    -o "tls.debug_file:debug_sniffEx.txt" \
+    -V > output_sniffEx.txt
+
+
+tshark -r capture.pcap \
+    -o "tls.keylog_file:ssl_key_log.log" \
+    -o "tls.debug_file:debug_capture.txt" \
+    -V > output_capture.txt
+```
+
+מסקנות:
+אני רואה כמה נקודות חשובות בדיבאג:
+
+1. **בעיית הPre-Master Secret**:
+```
+ssl_decrypt_pre_master_secret: decryption failed: -49 (No certificate was found.)
+ssl_generate_pre_master_secret: can't decrypt pre-master secret
+```
+Wireshark לא מצליח לפענח את ה-pre-master secret למרות שיש לנו מפתח תקין ב-SSLKEYLOG. זה יכול להיות קשור לאיך שהמפתח מיוצא.
+
+2. **בעיית Master Secret**:
+למרות שאנחנו מצליחים לקרוא את ה-master secret מה-SSLKEYLOG:
+```
+Client Random[32]:
+| 67 74 3f 23 fc 15 af ab 81 15 dd 81 72 3e a2 bd |
+...
+(pre-)master secret[48]:
+| 1e 08 9f 36 9f 9b 76 8c 0c 05 b5 73 03 8b 5e 39 |
+```
+
+יש בעיה בשימוש בו:
+```
+ssl_restore_master_key can't find master secret by Session ID
+ssl_restore_master_key can't find master secret by Client Random
+Cannot find master secret
+```
+
+3. **בעיית Key Block**:
+```python
+key_block = session.prf.derive_key_block(
+    session.master_secret,
+    b"key expansion",
+    session.server_random + session.client_random,
+    key_length
+)
+```
+אנחנו מייצרים את ה-key block נכון, אבל Wireshark לא משתמש במפתחות האלה.
+
+זה נראה שיש בעיה במעבר בין השלבים:
+1. יצירת ה-pre master secret
+2. גזירת ה-master secret
+3. יצירת מפתחות ההצפנה
+4. שימוש במפתחות להצפנה
+
+אולי נבדוק:
+1. האם ה-SSLKEYLOG מכיל את ה-master secret הנכון (לבדוק hash של המפתח)
+2. האם סדר הbytes של ה-client_random ו-master_secret בקובץ SSLKEYLOG נכון
+3. האם הפורמט של קובץ הLOG תואם בדיוק למה שWireshark מצפה
+
+מה דעתך?
+
 בהתחלה, השגיאה שקיבלתי מtshark debug היא:
 ...
 לכן ביצעתי את המחקר הבא:
