@@ -1,7 +1,37 @@
 # CTF Challenge: TLS Handshake and Encryption Algorithms
 
-## **Introduction**
-This repository contains a Capture The Flag (CTF) challenge that simulates vulnerabilities in TLS communication. Participants will analyze traffic, fix clients, and create secure communications using cryptography, reverse engineering, and network analysis tools.
+## Project Overview
+
+This project is a Capture The Flag (CTF) challenge focused on network security and the TLS protocol. The challenge is designed to test participants' understanding of TLS handshake processes, certificate management, and encrypted communication analysis.
+
+### Project Components
+
+1. **PCAP Creation for Participants:**
+   - The PCAP file simulates communication between a server and two clients. Both clients perform a handshake with the server. The server requests a CLIENT CERT, but only Client 1 provides it, while Client 2 does not.
+   - Encrypted application data communication occurs between Client 1 and the server, consisting of three packets (HTTP GET, 200 OK, resource sent).
+
+2. **Two Communication Sessions:**
+   - **Session 1: Server and Client Communication:**
+     - The server is an Iranian server, and participants need to understand from the PCAP that the server expects the client to send a client certificate signed by a specific CA.
+     - Participants then move to the next communication session.
+
+   - **Session 2: Client and CA Server Communication:**
+     - The client requests the CA server to sign a CSR.
+     - The CA server signs the CSR and sends back a signed certificate.
+     - Participants return to the first communication session and attempt to send the signed CLIENT CERT to the Iranian server but find that the server does not respond positively.
+     - The server requires a specific condition to be present in the certificate.
+     - Participants realize they need to edit the CSR before sending it to the CA.
+     - By performing a MITM attack using Burp Suite, participants edit the CSR as required and get it signed by the CA.
+     - Participants return to the first communication session and send the appropriate CRT to the Iranian server.
+     - The server responds positively and sends encrypted messages to the client.
+     - Participants need to determine the encryption cipher used.
+
+3. **Decrypting the Encrypted Messages:**
+   - The server downloads an image to the participant's computer, showing an Enigma machine and a hidden hint in the binary code of the image (hex view) that contains the Enigma machine configuration, except for the specific model.
+   - Using the configuration and searching online for Enigma cipher decryption, participants can determine the machine model.
+   - After decryption, participants understand the words "Client" and "Master Secret" and need to deduce that these are two strings forming the SSLKEYLOG file.
+   - They load it into Wireshark, decrypt the application data, and find the flag.
+
 ![CTF Diagram](documents/ctf-diagram.png)
 
 ```sh
@@ -36,6 +66,7 @@ pip install -r requirements.txt
 The challenge is themed around the Ritchie Boys, a historical group of German-born individuals recruited by the US Army in World War II for intelligence and psychological warfare against Nazi Germany.
 In the context of the challenge, the Ritchie Boys Force is revived in 2025 to combat Iran's Islamic Revolutionary Guard Corps.
 The player's goal is to compromise an Iranian server and extract the encryption key used for the organization's radio communications.
+
 
 ## Subjects
 This challenge develops a broad range of technical skills, including:
@@ -72,14 +103,14 @@ This challenge develops a broad range of technical skills, including:
 
 ## Usage
 
-### **PCAP Creation Overview**
+### PCAP Creation Overview
+
 ![PCAP Screenshot](documents/pcap_screenshot.png)
-**PCAP Creation for Participants:**
-   - The PCAP file simulates communication between a server and two clients. Both clients perform a handshake with the server. The server requests a CLIENT CERT, but only Client 1 provides it, while Client 2 does not.
-   - Encrypted application data communication occurs between Client 1 and the server, consisting of three packets (HTTP GET, 200 OK, resource sent).
+
 The **UnifiedTLSSession** class facilitates the simulation of a TLS session between a client and a server, enabling the creation of PCAP files.
 
-### **Core Features:**
+### Core Features
+
 1. **TLS Handshake**: Simulates certificate exchange and encryption negotiation to establish a secure connection.
 2. **Application Data Exchange**: Supports both encrypted `TLS` and unencrypted `HTTP` communication based on session configuration.
 
@@ -150,11 +181,14 @@ def perform_handshake(self) -> bool:
     logging.info("TLS Handshake completed successfully")
     return True
 ```
-
-## **Client Hello**
+## **TLS Handshake Process**
+### **Client Hello**
 **Purpose**: The client initiates the handshake by sending supported `ciphers`, `extensions`, and `random` bytes.
 
 ```python
+from scapy.layers.tls.crypto.suites import TLS_RSA_WITH_AES_128_CBC_SHA256
+from scapy.layers.tls.handshake import TLSClientHello
+from tls.constants import TLSVersion
 from typing import Optional
 
 def create_client_hello(
@@ -184,17 +218,22 @@ def create_client_hello(
     )
 ```
 
-### **Explanation:**
+**Explanation:**
 1. **Client Random:** Combines the GMT Unix timestamp and 28 random bytes.
 2. **Supported Ciphers:** Advertises the supported algorithms for encryption and hashing.
 3. **Extensions:** Adds optional features like server name indication, supported groups, and signature algorithms.
 
 ---
 
-## **Server Hello**
+### **Server Hello**
 **Purpose**: Responds to the `Client Hello` by providing `random` bytes, the `selected cipher` (encryption parameters), and `extensions`.
 
 ```python
+from scapy.layers.tls.crypto.suites import TLS_RSA_WITH_AES_128_CBC_SHA256
+from scapy.layers.tls.handshake import TLSServerHello
+from tls.constants import TLSVersion
+from typing import Optional
+
 def create_server_hello(
         session,
         extensions: Optional[ServerExtensions] = None
@@ -221,20 +260,24 @@ def create_server_hello(
     )
 ```
 
-### **Explanation:**
+**Explanation:**
 1. **Server Random:** Combines a timestamp and random bytes for key generation.
 2. **Selected Cipher:** Agrees upon one cipher suite from the client’s list.
 3. **Extensions:** Adds advanced security options like extended master secrets.
 
+Server certificate signed by CA:
 ![Server certificate signed by CA](documents/signed_server_cert.png)
 
 ---
 
-## **Client Key Exchange**
+### **Client Key Exchange**
 **Purpose**: The client generates a `Pre-Master Secret`, encrypts it, and sends it to the server.
 This secret is encrypted using the server's `public key`, making it accessible only to the intended recipient.
 
 ```python
+from scapy.layers.tls.handshake import TLSCertificate, TLSClientKeyExchange
+from tls.utils.cert import load_cert
+
 def create_client_certificate_and_key_exchange(
         session
         ) -> tuple[TLSCertificate, TLSClientKeyExchange]:
@@ -271,7 +314,7 @@ def create_client_certificate_and_key_exchange(
     return client_certificate, client_key_exchange
 ```
 
-### **Explanation:**
+**Explanation:**
 1. **Client Certificate:** A TLS certificate representing the client is prepared and appended to the handshake messages.
 2. **Pre-Master Secret:** A randomly generated `pre-master secret` is created for the session.
    This value serves as the foundation for deriving the `master secret` used in subsequent encryption.
@@ -279,18 +322,19 @@ def create_client_certificate_and_key_exchange(
    The encryption guarantees that only the server, possessing the corresponding `private key`, can decrypt it.
 4. **Key Exchange Message:** The encrypted `pre-master secret` is packaged into a key exchange message, preceded by its length in bytes.
 
-#### **Notice:**
+***Notice:***
 In **TLS 1.2**, when using **RSA Key Exchange**, no `ServerKeyExchange` message is sent.
 The handshake process relies on encrypting the `Pre-Master Secret` with the server's public key, so no additional signature is required from the server.
 However, in cases of **Diffie-Hellman (DH)** or **Elliptic Curve Diffie-Hellman (ECDH)**, a `ServerKeyExchange` message is necessary.
 
 ---
 
-## **Master Secret Generation**
+### **Master Secret Generation**
 ```python
+
 def generate_master_secret(
         session,
-        encrypted_pre_master_secret: bytes,
+        encrypted_pre_master_secret: bytes, 
         client_random: bytes,
         server_random: bytes
     ) -> bytes:
@@ -301,22 +345,15 @@ def generate_master_secret(
         session.server_private_key
     )
     
-    logging.info(
-        f"Decrypted pre_master_secret: {pre_master_secret.hex()}"
-    )
-    
     # Compute master secret
     master_secret = session.prf.compute_master_secret(
-        pre_master_secret,
+        pre_master_secret, 
         client_random,
         server_random
     )
-    
-    logging.info(f"Generated master secret: {master_secret.hex()}")
     return master_secret
 ```
-
-### **Explanation:**
+**Explanation:**
 1. **Decryption:** The server decrypts the `pre-master secret` using its private key.
 2. **Master Secret Calculation:** Uses the PRF (Pseudo-Random Function) to derive the `master secret` from the `pre-master secret`, `client random`, and `server random` values.
 
@@ -341,7 +378,7 @@ def handle_master_secret(session) -> None:
     )
 ```
 
-***Explanation:***
+**Explanation:**
 1. **Client Side:**
    - The client encrypts the `pre_master_secret` using the server's public key from its certificate.
    - This ensures that only the server can decrypt it.
@@ -356,7 +393,7 @@ def handle_master_secret(session) -> None:
 
 ---
 
-#### Client Change Cipher Spec
+### Client Change Cipher Spec
 
 **Purpose:** The `ChangeCipherSpec` message is sent by the client to notify the server that it will start using the negotiated encryption and MAC settings. This is immediately followed by the `Finished` message, encrypted with the newly established settings.
 
@@ -384,7 +421,8 @@ def send_client_change_cipher_spec(session) -> bytes:
     )
 ```
 
-***Explanation:***
+**Explanation:**
+
 1. **Verify Data:**
    - The client computes the `verify_data` using all previous handshake messages and the derived `master_secret`.
    - This ensures the integrity of the handshake.
@@ -397,7 +435,7 @@ def send_client_change_cipher_spec(session) -> bytes:
 
 ---
 
-#### Server Change Cipher Spec
+### Server Change Cipher Spec
 
 **Purpose:** The server sends the `ChangeCipherSpec` message to notify the client it will use the negotiated encryption settings. It follows with the `Finished` message, encrypted with the new settings, to confirm the handshake.
 
@@ -425,7 +463,8 @@ def send_server_change_cipher_spec(session) -> bytes:
     )
 ```
 
-***Explanation:***
+**Explanation:**
+
 1. **Verify Data:**
    - The server computes `verify_data` using the handshake messages and `master_secret`.
    - Confirms the integrity and authenticity of the handshake.
@@ -438,7 +477,7 @@ def send_server_change_cipher_spec(session) -> bytes:
 
 ---
 
-#### **Create SSLKeyLog File**
+### **Create SSLKeyLog File**
 
 **Purpose:** Enables debugging of encrypted TLS traffic by exporting the `master_secret` and `client_random` to a log file, making it compatible with tools like Wireshark.
 
@@ -465,7 +504,8 @@ def handle_ssl_key_log(session) -> None:
         f.write(f"CLIENT_RANDOM {client_random_hex} {master_secret_hex}\n")
 ```
 
-***Explanation:***
+**Explanation:**
+
 1. **Clearing the SSL Key Log File:**
    - The log file is cleared at the start to ensure no residual data from previous sessions interferes with debugging.
 
@@ -481,7 +521,7 @@ def handle_ssl_key_log(session) -> None:
 
 ---
 
-#### Application Data Encryption
+### Application Data Encryption
 Code for encrypting application data using AES-128-CBC with HMAC-SHA256.
 
 ```python
@@ -523,58 +563,265 @@ def _handle_encrypted_exchange(
 ```
 ---
 
-### SSL Communication Overview
+# CTF Challenge Server Implementation
 
+## Overview
 
-**Two Communication Sessions:**
-   - **Session 1: Server and Client Communication:**
-     - The server is an Iranian server, and participants need to understand from the PCAP that the server expects the client to send a client certificate signed by a specific CA.
-     - Participants then move to the next communication session.
+This implementation comprises three interconnected security challenges that must be completed sequentially. The server orchestrates these challenges through a combination of ICMP timing verification, certificate authority operations, and encrypted image processing.
 
-   - **Session 2: Client and CA Server Communication:**
-     - The client requests the CA server to sign a CSR.
-     - The CA server signs the CSR and sends back a signed certificate.
-     - Participants return to the first communication session and attempt to send the signed CLIENT CERT to the Iranian server but find that the server does not respond positively.
-     - The server requires a specific condition to be present in the certificate.
-     - Participants realize they need to edit the CSR before sending it to the CA.
-     - By performing a MITM attack using Burp Suite, participants edit the CSR as required and get it signed by the CA.
-     - Participants return to the first communication session and send the appropriate CRT to the Iranian server.
-     - The server responds positively and sends encrypted messages to the client.
-     - Participants need to determine the encryption cipher used.
+## Challenge Structure
 
-3. **Decrypting the Encrypted Messages:**
-   - The server downloads an image to the participant's computer, showing an Enigma machine and a hidden hint in the binary code of the image (hex view) that contains the Enigma machine configuration, except for the specific model.
-   - Using the configuration and searching online for Enigma cipher decryption, participants can determine the machine model.
-   - After decryption, participants understand the words "Client" and "Master Secret" and need to deduce that these are two strings forming the SSLKEYLOG file.
-   - They load it into Wireshark, decrypt the application data, and find the flag.
+### 1. ICMP Timing Challenge
+
+The first stage involves precise ICMP packet timing and payload size requirements. Participants must send exactly 5 ping requests with specific constraints:
+
+- Timing window: 9-11 seconds
+- Progressive payload sizes: Each subsequent ping must increase by 100 bytes
+- Strict request count validation
+
+```python
+def _validate_request(self, packet) -> bool:
+    # Check timing constraints
+    time_elapsed = time.time() - self.first_ping_time
+    if time_elapsed < 9 or time_elapsed > 11:
+        logging.info("Timing out of acceptable range")
+        self._reset_state()
+        return False
+
+    # Validate payload size progression
+    payload_size = len(packet[Raw].load) if packet.haslayer(Raw) else 0
+    expected_size = (self.request_count - 1) * 100
+    if payload_size != expected_size:
+        logging.info(f"Invalid payload size for request {self.request_count}")
+        self._reset_state()
+        return False
+
+    return True
+```
+
+### 2. Certificate Authority Challenge
+
+Upon completing the ICMP challenge, a CA server activates to handle certificate signing requests (CSR). The CA implements:
+
+- CSR validation and signature verification
+- Certificate chain validation
+- Secure certificate delivery
+
+```python
+def handle_client_request(self, ssl_socket: ssl.SSLSocket) -> bool:
+    try:
+        headers, initial_body = read_http_request(ssl_socket)
+        body = read_request_body(ssl_socket, initial_body, content_length)
+        
+        # Validate and process CSR
+        csr_obj = verify_client_csr(body)
+        if not csr_obj:
+            send_error_response(ssl_socket, b"HTTP/1.1 403 Forbidden", b"Invalid CSR")
+            return False
+
+        # Sign certificate and send response
+        crt_file = sign_csr_with_ca(csr_pem=body, 
+                                   ca_key_pem=self.key_bytes, 
+                                   ca_cert_pem=self.cert_bytes)
+```
+
+### 3. Image Challenge with Encrypted Messages
+
+The final stage involves:
+
+- Embedded encryption keys in image data
+- Encrypted messages requiring Enigma configuration
+- SSL session information extraction
+
+```python
+class ImageChallenge:
+    def __init__(self):
+        self.messages = [
+            "1. rteng eqmna jibjl kpvq",  # Encrypted message 1
+            "2. xasfh yynve watta epkas mtqot lhlyi rmmpb ifeuv...",
+            # Additional encrypted messages...
+        ]
+        
+        self.enigma_config = (
+            "{reflector} UKW B "
+            "{ROTOR_POSITION_RING} VI A A I Q A III L A "
+            "{PLUGBOARD} bq cr di ej kw mt os px uz gh"
+        )
+
+    def hide_key_in_image(self, image_data: bytes, key: str) -> bytes:
+        """Embeds encryption key in image data"""
+        key_bytes = key.encode()
+        return image_data + key_bytes
+```
+
+## Server Implementation Details
+
+The main CTF server (`CTFServer`) coordinates all challenges:
+
+```python
+def _handle_server_loop(self) -> None:
+    ca_started = False
+    encryption_key_printed = False
+    
+    while self.running:
+        # Check ICMP challenge completion
+        if self.icmp_completed.is_set() and not ca_started:
+            logging.info("ICMP Challenge completed - Starting CA server...")
+            self.ca_challenge.initialize()
+            ca_thread = threading.Thread(target=self.ca_challenge.run)
+            ca_thread.start()
+            ca_started = True
+            
+        # Handle client connections
+        if ready:
+            client_socket, addr = self.server_socket.accept()
+            messages = self.image_challenge.get_encrypted_messages()
+            self.handle_client_request(client_socket, messages)
+```
+
+## Security Features
+
+- TLS 1.2 implementation with specific cipher suite requirements
+- Certificate verification and validation
+- Timing-based security controls
+- Encrypted data transmission
+- Multi-stage challenge progression
+
+## Challenge Completion Requirements
+
+1. **ICMP Stage**
+   - Successfully complete the timing challenge
+   - Meet payload size requirements
+   - Stay within request count limits
+
+2. **CA Stage**
+   - Submit valid CSR
+   - Obtain signed certificate
+   - Establish secure connection
+
+3. **Image Stage**
+   - Extract encryption key from image
+   - Decrypt messages using Enigma configuration
+   - Validate SSL session information
 
 ---
 
 ## Participants Solution
 
-In this section of the README, I would describe possible solutions to the challenge, focusing on the ways participants might approach and solve the problem. Here is a possible wording:
-
 **Possible Solutions:**
 
-* **Identifying MITM Weakness:** Experienced participants will identify the potential for a Man-in-the-Middle (MITM) attack on the communication between the client and the Certificate Authority. They will understand that forging the Certificate Signing Request (CSR) will allow them to obtain a digital certificate with the correct domain name, thereby bypassing the server's check.
-* **Using Burp Suite:** Participants can use Burp Suite or another proxy tool to intercept and modify the network traffic between `csr_client.exe` and `ca_server.exe`.
-* **Forging the Domain Name:** Participants will need to identify the domain name expected by the server and modify the CSR accordingly.
-* **Decrypting the Enigma Cipher:** After successfully connecting to the server, participants will need to analyze the image file and server messages to understand that they are dealing with an Enigma cipher. They can use online tools or write scripts to decrypt the cipher.
-* **Extracting Information from Enigma Messages:** Participants will need to identify and use critical information from the decrypted Enigma messages, such as the `client random` and `master secret`, to decrypt the TLS traffic.
-* **Decrypting TLS Traffic:** Participants can use Wireshark or another tool to decrypt the network traffic, using the information extracted from the Enigma messages.
-* **Finding the Flag:** Finally, participants will need to analyze the decrypted traffic to find the flag.
+1. **Certificate Request Analysis:**
+   - Identify requirement for CA-signed certificate
+   - Utilize Burp Suite for CA communication analysis
+   - Determine specific required common name in certificate request
+   - Analyze certificate parameters and validation requirements
 
-**Possible Variations:**
+2. **Server Communication:**
+   - Implement certificate-based server authentication
+   - Receive encrypted server messages and image payload
+   - Identify Enigma encryption pattern in server responses
+   - Monitor SSL/TLS session parameters
 
-* There may be multiple ways to forge the CSR.
-* There may be additional hints or hidden challenges within the image file or Enigma messages.
-* A deeper analysis of the TLS protocol or Enigma cipher may be required.
+3. **Hidden Data Analysis:**
+   - Examine image file using hex editor
+   - Extract hidden Enigma configuration data
+   - Identify image as Enigma machine reference
+   - Cross-reference configuration parameters with image context
 
-It is important to note that this is just a general description of possible solutions. Participants may find creative and unique ways to solve the challenge.
+4. **Message Decryption:**
+   - Apply discovered Enigma settings for message decryption
+   - Parse final message containing SSL session data
+   - Format SSL session information in SSLKEYLOG format
+   - Validate decryption success through message coherence
+
+5. **PCAP Analysis:**
+   - Apply SSLKEYLOG data in Wireshark
+   - Decrypt TLS traffic in original PCAP file
+   - Extract flag from decrypted communication
+   - Verify solution integrity
+
+**Technical Complexity:**
+The challenge integrates multiple cybersecurity domains:
+- Modern Cryptography (SSL/TLS protocols)
+- Classical Cryptography (Enigma cipher)
+- Steganography (Image data embedding)
+- Network Forensics (PCAP analysis)
+- Certificate Management (CSR/CA operations)
+
+**Advanced Features:**
+- Multi-layered encryption scheme
+- Cross-domain challenge components
+- Real-world protocol implementation
+- Forensic analysis requirements
+- Dynamic certificate validation
+
+**Educational Value:**
+- Demonstrates PKI concepts
+- Illustrates historical cryptography
+- Teaches protocol analysis
+- Develops forensic skills
+- Combines multiple security domains
+
+This multi-stage challenge requires comprehensive understanding of information security principles, cryptographic systems, and network analysis techniques. The solution path demonstrates practical application of both historical and modern security concepts.
 
 ---
 
-## External Tools
+# External Tools and Services
+
+## File Distribution System
+
+A secure mechanism for distributing challenge components through embedded executable files.
+
+### Overview
+
+The system embeds multiple components within a single PDF file:
+1. Original PDF with challenge instructions
+2. Unencrypted server executable
+3. Symmetric encryption key
+4. Encrypted client executable
+
+### Implementation Details
+
+#### Embedding Process
+- Uses Fernet symmetric encryption with custom prefix
+- Maintains PDF readability while storing binary data
+- Implements clear section markers for data extraction
+- Provides integrity verification mechanisms
+
+#### Security Measures
+```python
+# Key generation with specific prefix
+key = b"DZDZ" + secrets.token_bytes(28)  # 32 bytes total
+```
+- Base64 encoded binary data
+- Checksum verification
+- Size limit enforcement (50MB)
+- PDF structure validation
+
+#### Data Organization
+```
+PDF Structure:
+├── Original PDF content
+├── %%SERVER_EXE%%
+│   └── Base64 encoded server.exe
+├── %%KEY%%
+│   └── Fernet encryption key
+├── %%ENCRYPTED_CLIENT%%
+│   └── Encrypted client.exe
+└── %%METADATA%%
+    └── Embedding information
+```
+
+### Verification System
+
+- SHA256 and MD5 checksums
+- File size validation
+- Embedding timestamp records
+- Operation logging
+
+This infrastructure ensures secure and verifiable distribution of challenge components while maintaining the integrity of the CTF challenge structure.
+
+---
 
 Used:
 ```bash
