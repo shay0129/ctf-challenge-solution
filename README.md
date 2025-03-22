@@ -18,7 +18,7 @@ This project is a Capture The Flag (CTF) challenge focused on network security a
    - **Session 2: Client and CA Server Communication:**
      - The client requests the CA server to sign a CSR.
      - The CA server signs the CSR and sends back a signed certificate.
-     - Participants return to the first communication session and attempt to send the signed CLIENT CERT to the Iranian server but find that the server does not respond positively.
+     - Participants return back and attempt to send the signed CLIENT CERT to the Iranian server but find that the server does not respond positively.
      - The server requires a specific condition to be present in the certificate.
      - Participants realize they need to edit the CSR before sending it to the CA.
      - By performing a MITM attack using Burp Suite, participants edit the CSR as required and get it signed by the CA.
@@ -678,6 +678,44 @@ def _handle_server_loop(self) -> None:
             messages = self.image_challenge.get_encrypted_messages()
             self.handle_client_request(client_socket, messages)
 ```
+
+```python
+# Certificate operations
+def verify_client_cert(cert: bytes, ssl_socket: ssl.SSLSocket) -> bool:
+   """
+   Verify client certificate against CA and check Common Name.
+   """
+   if not cert:
+       logging.error("No certificate provided")
+       return False
+
+   try:
+       cert_obj = x509.load_der_x509_certificate(cert, default_backend())
+       logging.info(f"Certificate subject: {cert_obj.subject}")
+       logging.info(f"Certificate issuer: {cert_obj.issuer}")
+
+       # Verify Common Name against expected hostname
+       for attr in cert_obj.subject:
+           if attr.oid == x509.NameOID.COMMON_NAME:
+               
+               # The trigger for CSR MITM challenge - change csr common name
+               if attr.value != ClientConfig.HOSTNAME_REQUESTED: 
+                   logging.error(f"Invalid Common Name: {attr.value}")
+                   return False
+               
+               # The trigger for Mismatch MITM challenge - change Certificate Length
+               if len(cert) != len(ssl_socket.getpeercert(binary_form=True)):  
+                   logging.error("Certificate length mismatch")
+                   return False
+           
+               else:
+                   logging.info(f"Valid Common Name: {attr.value}")
+                   break
+```
+this code include 2 triggers for MITM challenge.
+1. ...
+2. ...
+
 
 ## Security Features
 
