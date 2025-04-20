@@ -10,33 +10,63 @@ This project is a Capture The Flag (CTF) challenge focused on network security a
    - The PCAP file simulates communication between a server and two clients. Both clients perform a handshake with the server. The server requests a CLIENT CERT, but only Client 1 provides it, while Client 2 does not.
    - Encrypted application data communication occurs between Client 1 and the server, consisting of three packets (HTTP GET, 200 OK, resource sent).
 
-2. **Two Communication Sessions:**
-   - **Session 1: Server and Client Communication:**
-     - The server is an Iranian server, and participants need to understand from the PCAP that the server expects the client to send a client certificate signed by a specific CA.
-     - Participants then move to the next communication session.
-
-   - **Session 2: Client and CA Server Communication:**
-     - The client requests the CA server to sign a CSR.
-     - The CA server signs the CSR and sends back a signed certificate.
-     - Participants return back and attempt to send the signed CLIENT CERT to the Iranian server but find that the server does not respond positively.
-     - The server requires a specific condition to be present in the certificate.
-     - Participants realize they need to edit the CSR before sending it to the CA.
-     - By performing a MITM attack using Burp Suite, participants edit the CSR as required and get it signed by the CA.
-     - Participants return to the first communication session and send the appropriate CRT to the Iranian server.
+2. **CTF Server**
+     The server is an Iranian server, and participants need to understand how start communication with it.
+     1. ICMP challange:
+     Printed "BBHHH!", and the participant needs to know this is part of ICMP protocol.
+     the solution: send ping to local host.
+     Than, the server will help them to build the correct pings burst.
+     When finished this challange, started CA challange and ca server is running.
+     2. CA challange:
+    Participants have to watch pcap file and understand that the server ask for client certificate who signed by specific ca server, who named: _IRGCA Root CA_.
+    According that, they have to send CSR to CA and get back signed CRT and send it to the server.
+    The server will not get this crt, so they have to edit the csr and change something(?) there, before send again to the server.
+    The defult csr the script send to CA is almost same as the client cert on the pcap file, but less 2 things:
+    - The name of the Participant (The Server ask him to his name, and check if its same as the CN on client cert).
+    - The 
+    Solution:
+    Create new CSR with openSSL command, with the correct information.
+```bash
+openssl req
+-new -newkey rsa:2048
+-nodes -keyout client.key
+-out client.csr
+```
+    Edit the csr who sent defult to ca server, and sign your own csr, using Burp proxy.
+    If you have ca.key and ca.crt, so can use this command:
+```bash
+openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out client.crt -days 365 -sha256
+```
+    They have option to connect CA and server with burp proxy, so they shall use it for do MITM and edit the CSR file before CA signed on it.
+    
+    3. Enigma Mechine challange:
      - The server responds positively and sends encrypted messages to the client.
      - Participants need to determine the encryption cipher used.
-
-3. **Decrypting the Encrypted Messages:**
+     - 
    - The server downloads an image to the participant's computer, showing an Enigma machine and a hidden hint in the binary code of the image (hex view) that contains the Enigma machine configuration, except for the specific model.
    - Using the configuration and searching online for Enigma cipher decryption, participants can determine the machine model.
    - After decryption, participants understand the words "Client" and "Master Secret" and need to deduce that these are two strings forming the SSLKEYLOG file.
    - They load it into Wireshark, decrypt the application data, and find the flag.
 
-![CTF Diagram](documents/ctf-diagram.png)
+## Challenge Completion Requirements
 
-```sh
-pip install -r requirements.txt
-```
+1. **ICMP Stage**
+   - Successfully complete the timing challenge
+   - Meet payload size requirements
+   - Stay within request count limits
+
+2. **CA Stage**
+   - Submit valid CSR
+   - Obtain signed certificate
+   - Establish secure connection
+
+3. **Enigma Mechine Stage**
+   - Extract encryption key from image
+   - Decrypt messages using Enigma configuration
+   - Validate SSL session information
+
+
+![CTF Diagram](documents/ctf-diagram.png)
 
 ## Table of Contents
 - [Challenge Description](#challenge-description)
@@ -106,6 +136,7 @@ This challenge develops a broad range of technical skills, including:
 ### PCAP Creation Overview
 
 ![PCAP Screenshot](documents/pcap_screenshot.png)
+
 
 The **UnifiedTLSSession** class facilitates the simulation of a TLS session between a client and a server, enabling the creation of PCAP files.
 
@@ -571,7 +602,9 @@ This implementation comprises three interconnected security challenges that must
 
 ## Challenge Structure
 
-### 1. ICMP Timing Challenge
+### PCAP Creator
+
+#### 1. ICMP Timing Challenge
 
 The first stage involves precise ICMP packet timing and payload size requirements. Participants must send exactly 5 ping requests with specific constraints:
 
@@ -599,7 +632,7 @@ def _validate_request(self, packet) -> bool:
     return True
 ```
 
-### 2. Certificate Authority Challenge
+#### 2. Certificate Authority Challenge
 
 Upon completing the ICMP challenge, a CA server activates to handle certificate signing requests (CSR). The CA implements:
 
@@ -625,7 +658,7 @@ def handle_client_request(self, ssl_socket: ssl.SSLSocket) -> bool:
                                    ca_cert_pem=self.cert_bytes)
 ```
 
-### 3. Image Challenge with Encrypted Messages
+#### 3. Image Challenge with Encrypted Messages
 
 The final stage involves:
 
@@ -654,7 +687,7 @@ class ImageChallenge:
         return image_data + key_bytes
 ```
 
-## Server Implementation Details
+### Server challanges
 
 The main CTF server (`CTFServer`) coordinates all challenges:
 
@@ -716,31 +749,32 @@ this code include 2 triggers for MITM challenge.
 1. ...
 2. ...
 
-
-## Security Features
-
-- TLS 1.2 implementation with specific cipher suite requirements
-- Certificate verification and validation
-- Timing-based security controls
-- Encrypted data transmission
-- Multi-stage challenge progression
-
-## Challenge Completion Requirements
-
-1. **ICMP Stage**
-   - Successfully complete the timing challenge
-   - Meet payload size requirements
-   - Stay within request count limits
-
-2. **CA Stage**
-   - Submit valid CSR
-   - Obtain signed certificate
-   - Establish secure connection
-
-3. **Image Stage**
-   - Extract encryption key from image
-   - Decrypt messages using Enigma configuration
-   - Validate SSL session information
+client side
+```python
+def _create_padded_csr(self, csr_content: bytes) -> bytes:
+        """Add Content-Length at the end of the CSR with padding."""
+        original_length = len(csr_content)
+        padding_marker = b"PADDING_START_1234567890_CHECKSUM_"
+        length_info = str(original_length).encode()
+        padded_csr = csr_content + padding_marker + length_info
+        logging.info(f"Original CSR length: {original_length}, Padded CSR length: {len(padded_csr)}")
+        return padded_csr
+```
+ca side
+```python
+# Extract original CSR and embedded length
+            original_csr, embedded_length = self._extract_original_csr_length(body)
+            
+            # Monitor and log content length
+            monitor_content_length(actual_length, declared_length, "SERVER", "RECEIVED")
+            
+            # Check for embedded length mismatch - additional security check
+            if embedded_length is not None and actual_length != embedded_length:
+                logging.error(f"Embedded length mismatch: embedded {embedded_length}, actual {actual_length}")
+                send_error_response(ssl_socket, b"HTTP/1.1 403 Forbidden", b"CSR tampering detected: embedded length mismatch")
+                return False
+```
+because burp updates automaticlly the content length to the right number, I used padding the csr len, for hard to change the csr.
 
 ---
 
@@ -804,62 +838,7 @@ This multi-stage challenge requires comprehensive understanding of information s
 
 ---
 
-# External Tools and Services
-
-## File Distribution System
-
-A secure mechanism for distributing challenge components through embedded executable files.
-
-### Overview
-
-The system embeds multiple components within a single PDF file:
-1. Original PDF with challenge instructions
-2. Unencrypted server executable
-3. Symmetric encryption key
-4. Encrypted client executable
-
-### Implementation Details
-
-#### Embedding Process
-- Uses Fernet symmetric encryption with custom prefix
-- Maintains PDF readability while storing binary data
-- Implements clear section markers for data extraction
-- Provides integrity verification mechanisms
-
-#### Security Measures
-```python
-# Key generation with specific prefix
-key = b"DZDZ" + secrets.token_bytes(28)  # 32 bytes total
-```
-- Base64 encoded binary data
-- Checksum verification
-- Size limit enforcement (50MB)
-- PDF structure validation
-
-#### Data Organization
-```
-PDF Structure:
-├── Original PDF content
-├── %%SERVER_EXE%%
-│   └── Base64 encoded server.exe
-├── %%KEY%%
-│   └── Fernet encryption key
-├── %%ENCRYPTED_CLIENT%%
-│   └── Encrypted client.exe
-└── %%METADATA%%
-    └── Embedding information
-```
-
-### Verification System
-
-- SHA256 and MD5 checksums
-- File size validation
-- Embedding timestamp records
-- Operation logging
-
-This infrastructure ensures secure and verifiable distribution of challenge components while maintaining the integrity of the CTF challenge structure.
-
----
+### Commands used
 
 Used:
 ```bash
@@ -929,3 +908,7 @@ python -m tls.main
 This is the standard way to organize Python projects, and it will work consistently in any environment.
 
 Would you like me to help you add the required dependencies to setup.py?
+
+
+
+

@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./communication/tls",
+        "./communication/tls"
+    ]
+}
