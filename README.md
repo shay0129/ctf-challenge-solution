@@ -4,9 +4,53 @@
 
 This project is a Capture The Flag (CTF) challenge focused on network security and the TLS protocol. The challenge is designed to test participants' understanding of TLS handshake processes, certificate management, and encrypted communication analysis.
 
+## Table of Contents
+- [Subjects](#subjects)
+- [Project Components](#project-components)
+    - [PCAP File](#pcap-file)
+    - [CTF Server](#ctf-server)
+- [Code Review](#code-review)
+    - [PCAP Creation](#pcap-creation)
+        - [TLS Handshake Steps](#tls-handshake-steps)
+        - [Client Hello](#client-hello)
+        - [Server Hello](#server-hello)
+        - [Client Key Exchange](#client-key-exchange)
+        - [Calculate Master Secret](#calculate-master-secret)
+        - [Client Change Cipher Spec](#client-change-cipher-spec)
+        - [Server Change Cipher Spec](#server-change-cipher-spec)
+        - [Create SSLKeyLog File](#create-sslkeylog-file)
+        - [Application Data Encryption](#application-data-encryption)
+    - [SSL Communication Overview](#ssl-communication-overview)
+        - [Project Description](#project-description)
+- [Challenge Steps](#challenge-steps)
+- [Participants Solution](#participants-solution)
+- [External Tools](#external-tools)
+- [Known Limitations](#known-limitations)
+- [Contributing](#contributing)
+- [License](#license)
+---
+## Subjects
+This challenge develops a broad range of technical skills, including:
+
+1. **Network Protocols**: Wireshark and Tshark to analyze captured network packets.
+   
+2. **Python Libs**: Scapy, cryptography, 
+
+3. **Operating System Forensics**: Using Procmon to analyze Server התנהגות. Hex Editor, ID3 tags, Enigma Mechine encryption. 
+
+4. **Cryptography**:
+   - Understanding of key exchange of 
+   - Decrypting files and securing communication.
+
+5. **Tools**: Burp for edit a packet. OpenSSL for TLS/SSL operations.
+
+6. **PCAP File Creation**: Implemention of TLS 1.2 handshake.
+
+---
+
 ### Project Components
 
-1. **PCAP Creation for Participants:**
+1. **PCAP File:**
    - The PCAP file simulates communication between a server and two clients. Both clients perform a handshake with the server. The server requests a CLIENT CERT, but only Client 1 provides it, while Client 2 does not.
    - Encrypted application data communication occurs between Client 1 and the server, consisting of three packets (HTTP GET, 200 OK, resource sent).
 
@@ -22,7 +66,26 @@ This project is a Capture The Flag (CTF) challenge focused on network security a
     According that, they have to send CSR to CA and get back signed CRT and send it to the server.
     The server will not get this crt, so they have to edit the csr and change something(?) there, before send again to the server.
     The defult csr the script send to CA is almost same as the client cert on the pcap file, but less 2 things:
-    - The name of the Participant (The Server ask him to his name, and check if its same as the CN on client cert).
+```bash
+CSR Subject
+Common Name (CN)	None
+Organizational Unit (OU)	Cybersecurity Department
+Organization (O)	None
+Locality (L)	Tehran
+State or Province (ST)	Tehran
+Country (C)	IR
+```
+
+They have to change to:
+```bash
+CSR Subject
+Common Name (CN)	Shay
+Organizational Unit (OU)	Cybersecurity Department
+Organization (O)	Sharif University of Technology
+Locality (L)	Tehran
+State or Province (ST)	Tehran
+Country (C)	IR
+```
     - The 
     Solution:
     Create new CSR with openSSL command, with the correct information.
@@ -39,14 +102,10 @@ openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out c
 ```
     They have option to connect CA and server with burp proxy, so they shall use it for do MITM and edit the CSR file before CA signed on it.
     
-    3. Enigma Mechine challange:
-     - The server responds positively and sends encrypted messages to the client.
-     - Participants need to determine the encryption cipher used.
-     - 
-   - The server downloads an image to the participant's computer, showing an Enigma machine and a hidden hint in the binary code of the image (hex view) that contains the Enigma machine configuration, except for the specific model.
-   - Using the configuration and searching online for Enigma cipher decryption, participants can determine the machine model.
-   - After decryption, participants understand the words "Client" and "Master Secret" and need to deduce that these are two strings forming the SSLKEYLOG file.
-   - They load it into Wireshark, decrypt the application data, and find the flag.
+    - The after handshake with Server successfull, it hides enigma key and prints enigma encrypted messages.
+    - The Server print base-64 data of audio file.
+    The participants have to understand the file who started "id3" is mp3 file.
+    - They save it as .mp3 and play it - this is the flag!
 
 ## Challenge Completion Requirements
 
@@ -68,28 +127,7 @@ openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out c
 
 ![CTF Diagram](documents/ctf-diagram.png)
 
-## Table of Contents
-- [Challenge Description](#challenge-description)
-- [Subjects](#subjects)
-- [Usage](#usage)
-    - [PCAP Creation Overview](#pcap-creation-overview)
-        - [TLS Handshake Steps](#tls-handshake-steps)
-        - [Client Hello](#client-hello)
-        - [Server Hello](#server-hello)
-        - [Client Key Exchange](#client-key-exchange)
-        - [Calculate Master Secret](#calculate-master-secret)
-        - [Client Change Cipher Spec](#client-change-cipher-spec)
-        - [Server Change Cipher Spec](#server-change-cipher-spec)
-        - [Create SSLKeyLog File](#create-sslkeylog-file)
-        - [Application Data Encryption](#application-data-encryption)
-    - [SSL Communication Overview](#ssl-communication-overview)
-        - [Project Description](#project-description)
-- [Challenge Steps](#challenge-steps)
-- [Participants Solution](#participants-solution)
-- [External Tools](#external-tools)
-- [Known Limitations](#known-limitations)
-- [Contributing](#contributing)
-- [License](#license)
+
 
 ## Challenge Description
 
@@ -97,43 +135,9 @@ The challenge is themed around the Ritchie Boys, a historical group of German-bo
 In the context of the challenge, the Ritchie Boys Force is revived in 2025 to combat Iran's Islamic Revolutionary Guard Corps.
 The player's goal is to compromise an Iranian server and extract the encryption key used for the organization's radio communications.
 
+## Code Review
 
-## Subjects
-This challenge develops a broad range of technical skills, including:
-
-1. **Network Traffic Analysis**:
-   - Using Wireshark to analyze captured network packets.
-   
-2. **Python Scripting**:
-   - Creating PCAP files with Scapy.
-   - Implementing socket programming for communication emulation.
-
-3. **Operating System Forensics**:
-   - Analyzing PE file formats.
-   - Applying forensic techniques for hidden data extraction.
-
-4. **Cryptography**:
-   - Understanding encryption key generation and usage.
-   - Decrypting files and securing communication.
-
-5. **HTTP Protocol Analysis**:
-   - Identifying and exploiting bugs in HTTP communications.
-
-6. **Reverse Engineering**:
-   - Extracting and embedding executable files within PDFs.
-
-7. **PCAP File Creation**:
-   - Simulating network interactions and capturing them for analysis with Scapy.
-
-8. **Protocol Analysis Tools**:
-   - Leveraging TShark for deeper protocol inspection.
-   - Using OpenSSL for TLS/SSL operations in a WSL environment.
-
----
-
-## Usage
-
-### PCAP Creation Overview
+### PCAP Creation
 
 ![PCAP Screenshot](documents/pcap_screenshot.png)
 
